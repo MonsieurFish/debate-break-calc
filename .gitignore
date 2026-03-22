@@ -1,0 +1,6 @@
+# Ignore everything
+*
+
+# Allow only the app and this file
+!break_calculator.html
+!.gitignore
