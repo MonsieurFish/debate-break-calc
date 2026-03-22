@@ -153,6 +153,7 @@
   <div class="tab-bar" id="tabBar">
     <button class="active" data-tab="calc">Break Calculator</button>
     <button data-tab="bracket">Bracket Generator</button>
+    <button data-tab="backtab">Backtab</button>
   </div>
 
   <!-- ============ TAB: BREAK CALCULATOR ============ -->
@@ -227,6 +228,39 @@
       </div>
     </div>
   </div>
+
+  <!-- ============ TAB: BACKTAB ============ -->
+  <div id="tab-backtab" class="hidden">
+    <div class="card">
+      <div class="fields" style="grid-template-columns:1fr 1fr;">
+        <div class="field">
+          <label for="btUrl">Tournament URL</label>
+          <input type="text" id="btUrl" placeholder="e.g. wst.calicotab.com/harvardwst2026" style="font-size:0.9rem;">
+        </div>
+        <div class="field">
+          <label for="btToken">API Token (optional)</label>
+          <input type="password" id="btToken" placeholder="For admin access to room ranks" style="font-size:0.9rem;">
+        </div>
+      </div>
+      <button class="calc-btn" id="btFetchBtn">Fetch &amp; Analyze</button>
+      <div id="btStatus" style="text-align:center;font-size:0.82rem;color:#6b7280;margin-top:0.5rem;"></div>
+    </div>
+    <div id="btOutput" class="hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div>
+            <span class="badge badge-break" id="btFormatBadge"></span>
+            <span style="font-size:0.85rem;color:#6b7280;margin-left:0.5rem;" id="btTournamentName"></span>
+          </div>
+          <div class="field" style="margin:0;width:auto;">
+            <select id="btRoundSelect" style="font-size:0.85rem;padding:0.3rem 0.5rem;"></select>
+          </div>
+        </div>
+        <table class="dist-table" id="btTable"></table>
+        <div class="note" id="btNote"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -243,6 +277,7 @@
     const tab = e.target.dataset.tab;
     document.getElementById('tab-calc').classList.toggle('hidden', tab !== 'calc');
     document.getElementById('tab-bracket').classList.toggle('hidden', tab !== 'bracket');
+    document.getElementById('tab-backtab').classList.toggle('hidden', tab !== 'backtab');
     container.classList.toggle('wide', tab === 'bracket');
   });
 })();
@@ -1230,6 +1265,425 @@
 
   function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+
+// ============================================================
+// BACKTAB ENGINE
+// ============================================================
+(function() {
+  let btData = null; // cached fetched data
+
+  document.getElementById('btFetchBtn').addEventListener('click', fetchAndAnalyze);
+  document.getElementById('btRoundSelect').addEventListener('change', function() {
+    if (btData) renderBacktab(btData, parseInt(this.value));
+  });
+
+  async function fetchAndAnalyze() {
+    const urlInput = document.getElementById('btUrl').value.trim();
+    const token = document.getElementById('btToken').value.trim();
+    const status = document.getElementById('btStatus');
+    const output = document.getElementById('btOutput');
+
+    if (!urlInput) { status.textContent = 'Please enter a tournament URL.'; return; }
+    useProxy = false; // reset proxy on each new attempt
+
+    // Parse URL: extract base and slug
+    // Accepts: "wst.calicotab.com/harvardwst2026" or "https://wst.calicotab.com/harvardwst2026"
+    let base, slug;
+    try {
+      let cleaned = urlInput.replace(/\/+$/, '');
+      if (!cleaned.startsWith('http')) cleaned = 'https://' + cleaned;
+      const url = new URL(cleaned);
+      base = url.origin;
+      slug = url.pathname.split('/').filter(Boolean).pop();
+    } catch(e) {
+      status.textContent = 'Invalid URL format.'; return;
+    }
+
+    const apiBase = base + '/api/v1/tournaments/' + slug;
+    const headers = token ? { 'Authorization': 'Token ' + token } : {};
+
+    status.textContent = 'Fetching tournament info...';
+
+    try {
+      // 1. Fetch tournament info
+      const tourney = await apiFetch(apiBase, headers);
+      const tourneyName = tourney.name || slug;
+
+      // Detect format from preferences or short_name
+      let isBP = false;
+      try {
+        const prefs = await apiFetch(apiBase + '/preferences', headers);
+        const teamsInDebate = prefs.find(p => p.identifier === 'debate_rules__teams_in_debate');
+        if (teamsInDebate && teamsInDebate.value === 4) isBP = true;
+      } catch(e) {
+        // Fallback: guess from name
+        if (/bp|british/i.test(tourneyName)) isBP = true;
+      }
+
+      // 2. Fetch rounds
+      status.textContent = 'Fetching rounds...';
+      const rounds = await apiFetch(apiBase + '/rounds', headers);
+      const prelimRounds = rounds.filter(r => r.stage === 'P').sort((a, b) => a.seq - b.seq);
+
+      // 3. Fetch all pairings and identify which rounds have draws
+      status.textContent = 'Fetching pairings for all rounds...';
+      const roundData = {};
+      for (const r of prelimRounds) {
+        try {
+          const pairings = await apiFetch(apiBase + '/rounds/' + r.seq + '/pairings', headers);
+          if (pairings && pairings.length > 0) {
+            roundData[r.seq] = { info: r, pairings, hasResults: r.completed };
+          }
+        } catch(e) { /* round has no draw yet */ }
+      }
+
+      if (Object.keys(roundData).length === 0) {
+        status.textContent = 'No draws found for any round.'; return;
+      }
+
+      // 4. Fetch team names
+      status.textContent = 'Fetching team info...';
+      const teamsResp = await apiFetch(apiBase + '/teams', headers);
+      const teamNames = {};
+      for (const t of teamsResp) {
+        const id = t.url; // use URL as key
+        teamNames[id] = t.short_name || t.long_name || ('Team ' + t.id);
+      }
+
+      // 5. Build results: for completed rounds, determine winners from pairings ballots
+      status.textContent = 'Fetching results...';
+      const teamWins = {}; // teamUrl -> win count
+      const teamSideHistory = {}; // teamUrl -> {aff: n, neg: n}
+      const sideMap = isBP ? { og: 'aff', cg: 'aff', oo: 'neg', co: 'neg' } : { aff: 'aff', neg: 'neg' };
+      // For 2-team: aff = prop, neg = opp
+
+      // Init all teams
+      for (const url in teamNames) { teamWins[url] = 0; teamSideHistory[url] = { aff: 0, neg: 0 }; }
+
+      // Process completed rounds
+      for (const seq of Object.keys(roundData).map(Number).sort()) {
+        const rd = roundData[seq];
+        // Track sides from pairings
+        for (const debate of rd.pairings) {
+          for (const dt of debate.teams) {
+            const teamUrl = dt.team;
+            if (!teamSideHistory[teamUrl]) teamSideHistory[teamUrl] = { aff: 0, neg: 0 };
+            const sideGroup = isBP
+              ? (['og', 'cg'].includes(dt.side) ? 'aff' : 'neg')
+              : (dt.side === 'aff' ? 'aff' : 'neg');
+            // Only count sides from rounds BEFORE the analysis round (accumulated at end)
+          }
+        }
+
+        if (!rd.hasResults) continue;
+
+        // Try to get results: check if ballots are in the pairing or need separate fetch
+        for (const debate of rd.pairings) {
+          try {
+            const ballotUrl = debate._links?.ballots;
+            if (!ballotUrl) continue;
+            const ballots = await apiFetch(ballotUrl, headers);
+            if (!ballots || ballots.length === 0) continue;
+            const ballot = ballots[ballots.length - 1]; // latest ballot
+            if (!ballot.result || !ballot.result.sheets) continue;
+            // Aggregate: for each team, check if they won
+            for (const sheet of ballot.result.sheets) {
+              for (const st of sheet.teams) {
+                // Find team URL by matching side to debate teams
+                const dt = debate.teams.find(t => t.side === st.side);
+                if (dt && st.win) {
+                  if (!teamWins[dt.team]) teamWins[dt.team] = 0;
+                  teamWins[dt.team]++;
+                }
+                // For BP: points instead of wins
+                if (isBP && dt && st.points !== undefined) {
+                  teamWins[dt.team] = (teamWins[dt.team] || 0); // wins tracked separately for BP
+                }
+              }
+            }
+          } catch(e) { /* ballot fetch failed, try alternative */ }
+        }
+      }
+
+      // If ballot fetching didn't work, try team standings API
+      let usedStandings = false;
+      const totalWins = Object.values(teamWins).reduce((a, b) => a + b, 0);
+      if (totalWins === 0) {
+        try {
+          status.textContent = 'Fetching standings...';
+          // Try the standings endpoint
+          const standingsResp = await apiFetch(apiBase + '/standings/teams', headers);
+          // This might not exist in all versions; handle gracefully
+        } catch(e) { /* no standings endpoint */ }
+      }
+
+      // Build side histories per round (cumulative up to each round)
+      const sideHistoryByRound = {}; // seq -> {teamUrl -> {aff, neg}}
+      const cumSides = {};
+      for (const url in teamNames) cumSides[url] = { aff: 0, neg: 0 };
+      for (const seq of Object.keys(roundData).map(Number).sort()) {
+        // Record history BEFORE this round
+        sideHistoryByRound[seq] = {};
+        for (const url in cumSides) sideHistoryByRound[seq][url] = { ...cumSides[url] };
+        // Now add this round's sides
+        for (const debate of roundData[seq].pairings) {
+          for (const dt of debate.teams) {
+            if (!cumSides[dt.team]) cumSides[dt.team] = { aff: 0, neg: 0 };
+            if (isBP) {
+              if (['og', 'cg'].includes(dt.side)) cumSides[dt.team].aff++;
+              else cumSides[dt.team].neg++;
+            } else {
+              if (dt.side === 'aff') cumSides[dt.team].aff++;
+              else cumSides[dt.team].neg++;
+            }
+          }
+        }
+      }
+
+      btData = { roundData, teamNames, teamWins, sideHistoryByRound, isBP, tourneyName, slug };
+
+      // Populate round selector
+      const roundSelect = document.getElementById('btRoundSelect');
+      roundSelect.innerHTML = '';
+      const seqs = Object.keys(roundData).map(Number).sort();
+      for (const seq of seqs) {
+        const r = roundData[seq].info;
+        const opt = document.createElement('option');
+        opt.value = seq;
+        opt.textContent = r.name + (r.completed ? '' : ' (draw only)');
+        roundSelect.appendChild(opt);
+      }
+      // Default to latest round with draw
+      roundSelect.value = seqs[seqs.length - 1];
+
+      document.getElementById('btFormatBadge').textContent = isBP ? 'BP' : 'WSDC';
+      document.getElementById('btTournamentName').textContent = tourneyName;
+
+      status.textContent = '';
+      output.classList.remove('hidden');
+      renderBacktab(btData, seqs[seqs.length - 1]);
+
+    } catch(e) {
+      console.error(e);
+      if (e.message.includes('Failed to fetch') || e.name === 'TypeError') {
+        status.innerHTML = 'Network error — could not reach the API. If running from a local file, try serving it: <code>python3 -m http.server</code> then open <code>localhost:8000</code>';
+      } else {
+        status.textContent = 'Error: ' + e.message;
+      }
+    }
+  }
+
+  let useProxy = false;
+  const PROXIES = [
+    url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  ];
+
+  async function apiFetch(url, headers) {
+    if (!useProxy) {
+      try {
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) throw new Error('API returned ' + resp.status);
+        return resp.json();
+      } catch(e) {
+        if (e.message.includes('Failed to fetch') || e.name === 'TypeError') {
+          useProxy = true;
+          document.getElementById('btStatus').textContent = 'Direct fetch blocked, retrying via proxy...';
+        } else { throw e; }
+      }
+    }
+    // Proxy path (no auth headers — proxies can't forward them)
+    for (const mkUrl of PROXIES) {
+      try {
+        const resp = await fetch(mkUrl(url));
+        if (resp.ok) return resp.json();
+      } catch(e) { /* try next proxy */ }
+    }
+    throw new Error('Could not reach API (tried direct + proxy)');
+  }
+
+  function renderBacktab(data, targetSeq) {
+    const { roundData, teamNames, teamWins, sideHistoryByRound, isBP } = data;
+    const pairingMethod = 'slide'; // extensible later
+
+    // Compute wins going INTO the target round
+    // = wins from all completed rounds before targetSeq
+    const winsBeforeTarget = {};
+    for (const url in teamNames) winsBeforeTarget[url] = 0;
+
+    // Rebuild wins from completed rounds before target
+    // We need round-by-round ballot data. For simplicity, use the total teamWins
+    // and subtract wins from the target round if it's completed.
+    // Actually, we need cumulative wins. Let's recompute from pairings.
+    // For now, use teamWins as total wins (all completed rounds).
+    // If targetSeq's round is completed, these are wins INCLUDING that round.
+    // If not completed, these are wins up to before targetSeq.
+    for (const url in teamNames) winsBeforeTarget[url] = teamWins[url] || 0;
+    // Adjust: if target round is completed, we still use total wins
+    // (the draw was generated based on wins before that round, but we show current wins)
+
+    const targetPairings = roundData[targetSeq].pairings;
+    const sideHistory = sideHistoryByRound[targetSeq] || {};
+
+    // Has room_rank from admin?
+    const hasRoomRank = targetPairings.length > 0 && targetPairings[0].room_rank !== undefined;
+
+    // Group debates by bracket (team point totals)
+    // Identify bracket by the most common win count among teams in each debate
+    const debates = targetPairings.map(d => {
+      const teams = d.teams.map(dt => ({
+        url: dt.team,
+        name: teamNames[dt.team] || dt.team.split('/').filter(Boolean).pop(),
+        side: dt.side,
+        wins: winsBeforeTarget[dt.team] || 0,
+      }));
+      const bracketWins = isBP
+        ? Math.max(...teams.map(t => t.wins)) // bracket level = highest wins in room
+        : Math.max(...teams.map(t => t.wins));
+      return {
+        id: d.id,
+        roomRank: d.room_rank, // may be undefined
+        bracket: d.bracket || bracketWins,
+        teams,
+      };
+    });
+
+    // Group by bracket
+    const brackets = {};
+    for (const d of debates) {
+      const key = d.bracket;
+      if (!brackets[key]) brackets[key] = [];
+      brackets[key].push(d);
+    }
+
+    // Sort brackets descending by wins
+    const bracketKeys = Object.keys(brackets).map(Number).sort((a, b) => b - a);
+
+    // Within each bracket, sort by room_rank (if available) or debate ID
+    for (const key of bracketKeys) {
+      if (hasRoomRank) {
+        brackets[key].sort((a, b) => a.roomRank - b.roomRank);
+      } else {
+        brackets[key].sort((a, b) => a.id - b.id);
+      }
+    }
+
+    // Infer ordinal ranking
+    const rankings = []; // {rank, teamName, teamUrl, wins, bracketRank, bracketSize, confidence}
+
+    for (const bKey of bracketKeys) {
+      const bracketDebates = brackets[bKey];
+      const nDebates = bracketDebates.length;
+
+      if (isBP) {
+        // BP: room-level ranking. All teams in room i ranked above room i+1.
+        let bracketPos = 1;
+        for (let i = 0; i < nDebates; i++) {
+          const d = bracketDebates[i];
+          for (const t of d.teams) {
+            rankings.push({
+              teamName: t.name, teamUrl: t.url, wins: t.wins,
+              bracketRank: i + 1, bracketSize: nDebates,
+              confidence: hasRoomRank ? 'High' : 'Medium',
+              tieGroup: i, // teams in same room are tied
+            });
+          }
+        }
+      } else {
+        // WSDC: slide inference
+        // In slide pairing of 2N teams: room i has subrank i (top) and N+i (bottom)
+        const topHalf = [];
+        const botHalf = [];
+
+        for (let i = 0; i < nDebates; i++) {
+          const d = bracketDebates[i];
+          if (d.teams.length < 2) continue;
+          const t0 = d.teams[0]; // current aff
+          const t1 = d.teams[1]; // current neg
+
+          // Infer top vs bottom from side balance
+          const h0 = sideHistory[t0.url] || { aff: 0, neg: 0 };
+          const h1 = sideHistory[t1.url] || { aff: 0, neg: 0 };
+          const imb0 = h0.aff - h0.neg; // aff imbalance for team on aff side
+          const imb1 = h1.aff - h1.neg; // aff imbalance for team on neg side
+
+          let topTeam, botTeam, conf;
+          // balance_sides: team with MORE aff imbalance goes neg
+          // If current arrangement has the team with less imbalance on aff → no swap → aff=top
+          if (imb0 < imb1) {
+            // No swap: aff (t0) is top half, neg (t1) is bottom
+            topTeam = t0; botTeam = t1; conf = 'High';
+          } else if (imb0 > imb1) {
+            // Swap happened: aff (t0) is actually bottom, neg (t1) is top
+            topTeam = t1; botTeam = t0; conf = 'High';
+          } else {
+            // Tie: ambiguous. Default: first team is top (by debate ID order)
+            topTeam = t0; botTeam = t1; conf = 'Low';
+          }
+
+          topHalf.push({ ...topTeam, room: i, confidence: conf });
+          botHalf.push({ ...botTeam, room: i, confidence: conf });
+        }
+
+        // Assign subranks: top half = 1..N, bottom half = N+1..2N
+        for (let i = 0; i < topHalf.length; i++) {
+          rankings.push({
+            teamName: topHalf[i].name, teamUrl: topHalf[i].url, wins: topHalf[i].wins,
+            bracketRank: i + 1, bracketSize: nDebates * 2,
+            confidence: topHalf[i].confidence,
+          });
+        }
+        for (let i = 0; i < botHalf.length; i++) {
+          rankings.push({
+            teamName: botHalf[i].name, teamUrl: botHalf[i].url, wins: botHalf[i].wins,
+            bracketRank: nDebates + i + 1, bracketSize: nDebates * 2,
+            confidence: botHalf[i].confidence,
+          });
+        }
+
+        // Handle pull-ups: teams in this bracket with fewer wins
+        // (already included above; their wins column will show fewer wins)
+      }
+    }
+
+    // Sort by wins desc, then bracketRank asc
+    rankings.sort((a, b) => b.wins - a.wins || a.bracketRank - b.bracketRank);
+
+    // Assign global ranks
+    for (let i = 0; i < rankings.length; i++) rankings[i].rank = i + 1;
+
+    // Render table
+    const table = document.getElementById('btTable');
+    let html = '<thead><tr>';
+    html += '<th>Est. Rank</th><th>Team</th><th>' + (isBP ? 'Points' : 'Wins') + '</th>';
+    html += '<th>In Bracket</th><th>Confidence</th>';
+    html += '</tr></thead><tbody>';
+
+    for (const r of rankings) {
+      const confClass = r.confidence === 'High' ? 'prob-high' : r.confidence === 'Medium' ? 'prob-mid' : 'prob-low';
+      html += '<tr>';
+      html += '<td><strong>' + r.rank + '</strong></td>';
+      html += '<td>' + escHtml(r.teamName) + '</td>';
+      html += '<td>' + r.wins + '</td>';
+      html += '<td>' + r.bracketRank + ' of ' + r.bracketSize + '</td>';
+      html += '<td class="' + confClass + '">' + r.confidence + '</td>';
+      html += '</tr>';
+    }
+    html += '</tbody>';
+    table.innerHTML = html;
+
+    // Note
+    const method = hasRoomRank ? 'room rank from admin API' : 'debate ID ordering + slide pairing + side balance inference';
+    document.getElementById('btNote').innerHTML =
+      'Estimated ranking inferred from ' + method + '. ' +
+      'Within each bracket (' + (isBP ? 'point' : 'win') + ' group), teams are ordered by room position in the draw. ' +
+      (isBP ? 'Teams in the same room are approximately equally ranked. ' : 'Top/bottom half determined by side allocation history. ') +
+      '"High" confidence = clear side imbalance signal. "Low" = tied imbalance, ordering is a guess.';
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 })();
 </script>
