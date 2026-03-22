@@ -3,399 +3,272 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Break Calculator</title>
+<title>Debate Tools</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 760px; margin: 0 auto; }
+  .container.wide { max-width: 1100px; }
+  header { text-align: center; margin-bottom: 1.5rem; }
+  header h1 { font-size: 1.8rem; font-weight: 700; color: #1a1a2e; letter-spacing: -0.02em; }
+  header p { color: #6b7280; margin-top: 0.25rem; font-size: 0.95rem; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04); padding: 1.5rem; margin-bottom: 1.25rem; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
-    min-height: 100vh;
-    padding: 2rem 1rem;
-  }
+  /* Tab bar */
+  .tab-bar { display: flex; background: #fff; border-radius: 10px; padding: 4px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .tab-bar button { flex: 1; padding: 0.65rem 1rem; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; background: transparent; color: #6b7280; transition: all 0.2s; }
+  .tab-bar button.active { background: #6366f1; color: #fff; }
+  .tab-bar button:hover:not(.active) { color: #374151; background: #f3f4f6; }
 
-  .container {
-    max-width: 760px;
-    margin: 0 auto;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  header h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    letter-spacing: -0.02em;
-  }
-
-  header p {
-    color: #6b7280;
-    margin-top: 0.25rem;
-    font-size: 0.95rem;
-  }
-
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-    padding: 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .format-toggle {
-    display: flex;
-    background: #f0f2f5;
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 1.25rem;
-  }
-
-  .format-toggle button {
-    flex: 1;
-    padding: 0.6rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    background: transparent;
-    color: #6b7280;
-    transition: all 0.2s;
-  }
-
-  .format-toggle button.active {
-    background: #fff;
-    color: #1a1a2e;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
+  /* Shared form styles */
+  .format-toggle { display: flex; background: #f0f2f5; border-radius: 8px; padding: 3px; margin-bottom: 1.25rem; }
+  .format-toggle button { flex: 1; padding: 0.6rem 1rem; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; background: transparent; color: #6b7280; transition: all 0.2s; }
+  .format-toggle button.active { background: #fff; color: #1a1a2e; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .format-toggle button:hover:not(.active) { color: #374151; }
-
-  .fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .field label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.35rem;
-  }
-
-  .field input {
-    width: 100%;
-    padding: 0.6rem 0.75rem;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #1a1a2e;
-    transition: border-color 0.2s;
-    -moz-appearance: textfield;
-  }
-
-  .field input::-webkit-outer-spin-button,
-  .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-  .field input:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-  }
-
-  .presets {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-
-  .presets span {
-    font-size: 0.8rem;
-    color: #6b7280;
-    font-weight: 600;
-    align-self: center;
-    margin-right: 0.25rem;
-  }
-
-  .presets button {
-    padding: 0.3rem 0.7rem;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 6px;
-    background: #fff;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .presets button:hover {
-    border-color: #6366f1;
-    color: #6366f1;
-  }
-
-  .calc-btn {
-    width: 100%;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 8px;
-    background: #6366f1;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
+  .fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+  .fields-2 { grid-template-columns: 1fr 1fr; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+  .field input, .field select { width: 100%; padding: 0.6rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 1.1rem; font-weight: 500; color: #1a1a2e; transition: border-color 0.2s; background: #fff; }
+  .field input { -moz-appearance: textfield; }
+  .field input::-webkit-outer-spin-button, .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .field select { cursor: pointer; }
+  .field input:focus, .field select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+  .presets { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .presets span { font-size: 0.8rem; color: #6b7280; font-weight: 600; align-self: center; margin-right: 0.25rem; }
+  .presets button { padding: 0.3rem 0.7rem; border: 1.5px solid #e5e7eb; border-radius: 6px; background: #fff; font-size: 0.82rem; font-weight: 500; color: #374151; cursor: pointer; transition: all 0.15s; }
+  .presets button:hover { border-color: #6366f1; color: #6366f1; }
+  .calc-btn { width: 100%; padding: 0.75rem; border: none; border-radius: 8px; background: #6366f1; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
   .calc-btn:hover { background: #4f46e5; }
   .calc-btn:active { background: #4338ca; }
+  .sim-badge { text-align: center; font-size: 0.78rem; color: #9ca3af; margin-top: 0.6rem; }
 
-  .sim-badge {
-    text-align: center;
-    font-size: 0.78rem;
-    color: #9ca3af;
-    margin-top: 0.6rem;
-  }
-
-  /* Verdict */
-  .verdict {
-    padding: 1.25rem;
-    border-radius: 10px;
-    line-height: 1.6;
-  }
-
-  .verdict.clean {
-    background: #ecfdf5;
-    border: 1.5px solid #a7f3d0;
-  }
-
-  .verdict.bubble {
-    background: #fffbeb;
-    border: 1.5px solid #fde68a;
-  }
-
-  .verdict .headline {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin-bottom: 0.35rem;
-  }
-
-  .verdict .detail {
-    font-size: 0.92rem;
-    color: #374151;
-  }
-
+  /* Break calculator styles */
+  .verdict { padding: 1.25rem; border-radius: 10px; line-height: 1.6; }
+  .verdict.clean { background: #ecfdf5; border: 1.5px solid #a7f3d0; }
+  .verdict.bubble { background: #fffbeb; border: 1.5px solid #fde68a; }
+  .verdict .headline { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .verdict .detail { font-size: 0.92rem; color: #374151; }
   .verdict .detail strong { font-weight: 600; }
-
-  .verdict .bubble-info {
-    margin-top: 0.5rem;
-    padding: 0.6rem 0.8rem;
-    background: rgba(0,0,0,0.04);
-    border-radius: 6px;
-    font-size: 0.88rem;
-  }
-
-  /* Table */
-  .dist-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.86rem;
-  }
-
-  .dist-table thead th {
-    text-align: left;
-    padding: 0.5rem 0.5rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    border-bottom: 2px solid #e5e7eb;
-  }
-
+  .verdict .bubble-info { margin-top: 0.5rem; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.04); border-radius: 6px; font-size: 0.88rem; }
+  .dist-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .dist-table thead th { text-align: left; padding: 0.5rem 0.5rem; font-size: 0.72rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid #e5e7eb; }
   .dist-table thead th.r { text-align: right; }
   .dist-table thead th.c { text-align: center; }
-
-  .dist-table tbody td {
-    padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid #f3f4f6;
-    vertical-align: middle;
-    font-variant-numeric: tabular-nums;
-  }
-
+  .dist-table tbody td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; font-variant-numeric: tabular-nums; }
   .dist-table tbody td.r { text-align: right; }
   .dist-table tbody td.c { text-align: center; }
-
   .dist-table tbody tr.row-break { background: #ecfdf5; }
   .dist-table tbody tr.row-bubble { background: #fffbeb; }
   .dist-table tbody tr.row-miss { color: #9ca3af; }
-
   .bar-cell { width: 110px; min-width: 70px; }
-
-  .bar-wrap {
-    position: relative;
-    height: 16px;
-    background: #f3f4f6;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .bar-range {
-    position: absolute;
-    height: 100%;
-    border-radius: 4px;
-    opacity: 0.3;
-  }
-
-  .bar-mean {
-    position: absolute;
-    height: 100%;
-    border-radius: 4px;
-  }
-
+  .bar-wrap { position: relative; height: 16px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+  .bar-range { position: absolute; height: 100%; border-radius: 4px; opacity: 0.3; }
+  .bar-mean { position: absolute; height: 100%; border-radius: 4px; }
   .fill-break { background: #34d399; }
   .fill-bubble { background: #fbbf24; }
   .fill-miss { background: #d1d5db; }
-
-  .badge {
-    display: inline-block;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
+  .badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
   .badge-break { background: #d1fae5; color: #065f46; }
   .badge-bubble { background: #fef3c7; color: #92400e; }
   .badge-miss { background: #f3f4f6; color: #9ca3af; }
-
   .prob-high { color: #065f46; font-weight: 600; }
   .prob-mid { color: #92400e; font-weight: 600; }
   .prob-low { color: #9ca3af; }
-
-  .error {
-    padding: 1rem;
-    background: #fef2f2;
-    border: 1.5px solid #fecaca;
-    border-radius: 10px;
-    color: #991b1b;
-    font-size: 0.92rem;
-  }
-
+  .error { padding: 1rem; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; color: #991b1b; font-size: 0.92rem; }
   .hidden { display: none; }
+  .break-line-row td { padding: 0 !important; border-bottom: 2.5px dashed #ef4444 !important; }
+  .note { margin-top: 1rem; font-size: 0.8rem; color: #9ca3af; line-height: 1.5; }
 
-  .break-line-row td {
-    padding: 0 !important;
-    border-bottom: 2.5px dashed #ef4444 !important;
-  }
+  /* Bracket generator styles */
+  .entry-toggle { display: flex; background: #f0f2f5; border-radius: 8px; padding: 3px; margin-bottom: 1rem; }
+  .entry-toggle button { flex: 1; padding: 0.5rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; background: transparent; color: #6b7280; transition: all 0.2s; }
+  .entry-toggle button.active { background: #fff; color: #1a1a2e; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .seed-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 1rem; max-height: 300px; overflow-y: auto; }
+  .seed-row { display: flex; align-items: center; gap: 0.4rem; }
+  .seed-row .seed-num { font-size: 0.8rem; font-weight: 600; color: #6b7280; width: 24px; text-align: right; flex-shrink: 0; }
+  .seed-row input { flex: 1; padding: 0.35rem 0.5rem; border: 1.5px solid #e5e7eb; border-radius: 6px; font-size: 0.85rem; }
+  .seed-row input:focus { outline: none; border-color: #6366f1; }
+  .paste-area { width: 100%; min-height: 120px; padding: 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem; font-family: inherit; resize: vertical; margin-bottom: 1rem; }
+  .paste-area:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+  .paste-hint { font-size: 0.78rem; color: #9ca3af; margin-bottom: 1rem; }
 
-  .note {
-    margin-top: 1rem;
-    font-size: 0.8rem;
-    color: #9ca3af;
-    line-height: 1.5;
-  }
+  /* Bracket visual */
+  .bracket-actions { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .bracket-actions button { padding: 0.5rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .bracket-actions button:hover { border-color: #6366f1; color: #6366f1; }
+  .bracket-actions .copied { color: #065f46; border-color: #34d399; background: #ecfdf5; }
+
+  .bracket-wrap { overflow-x: auto; padding-bottom: 1rem; }
+
+  /* WSDC bracket tree — absolute positioning */
+  .bracket-container { position: relative; }
+  .bracket-container svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+  .bracket-round-label { position: absolute; font-size: 0.72rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+  .bracket-matchup { position: absolute; border: 1.5px solid #d1d5db; border-radius: 6px; overflow: hidden; background: #fff; }
+  .bracket-matchup .bm-team { padding: 4px 8px; font-size: 0.82rem; white-space: nowrap; height: 26px; display: flex; align-items: center; gap: 6px; }
+  .bracket-matchup .bm-team:first-child { border-bottom: 1px solid #f3f4f6; }
+  .bracket-matchup .bm-seed { font-weight: 700; color: #6366f1; font-size: 0.75rem; min-width: 18px; }
+  .bracket-matchup .bm-name { color: #1a1a2e; }
+  .bracket-matchup .bm-empty { color: #d1d5db; font-style: italic; font-size: 0.78rem; }
+  .bracket-matchup.bm-final { border-color: #6366f1; border-width: 2px; }
+  .bracket-matchup.bm-bye { border-style: dashed; border-color: #a5b4fc; background: #f5f3ff; }
+  .bracket-matchup.bm-bye .bm-team:first-child { border-bottom: none; }
+  .bm-bye-label { font-size: 0.7rem; color: #6366f1; font-weight: 600; }
+
+  /* Drag and drop / click to advance */
+  .bm-team.bm-draggable { cursor: grab; transition: background 0.15s; }
+  .bm-team.bm-draggable:hover { background: #f0f0ff; }
+  .bm-team.bm-dragging { opacity: 0.4; }
+  .bm-team.bm-drop-target { outline: 2px dashed #6366f1; outline-offset: -2px; background: #f5f3ff; }
+  .bm-team.bm-drop-hover { background: #e0e7ff; }
+  .bm-team.bm-filled { background: #f9fafb; }
+
+  /* BP bracket */
+  .bp-bracket { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .bp-round { min-width: 200px; }
+  .bp-round-title { font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; text-align: center; }
+  .bp-room { border: 1.5px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.75rem; overflow: hidden; background: #fff; }
+  .bp-room-header { background: #f9fafb; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; color: #6b7280; text-transform: uppercase; border-bottom: 1px solid #f3f4f6; }
+  .bp-room .bp-team { padding: 3px 8px; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; min-height: 24px; }
+  .bp-room .bp-team:not(:last-child) { border-bottom: 1px solid #f9fafb; }
+  .bp-room .bm-seed { font-weight: 700; color: #6366f1; font-size: 0.75rem; min-width: 18px; }
+  .bp-room .bp-feed { color: #9ca3af; font-style: italic; font-size: 0.78rem; }
+  .bp-advance-label { text-align: center; font-size: 0.72rem; color: #9ca3af; padding: 0.25rem 0; }
 
   @media (max-width: 600px) {
     .fields { grid-template-columns: 1fr; }
     .bar-cell { display: none; }
     .hide-mobile { display: none; }
+    .seed-inputs { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="appContainer">
   <header>
-    <h1>Break Calculator</h1>
-    <p>Monte Carlo simulation of Tabbycat bracket mechanics</p>
+    <h1>Debate Tools</h1>
   </header>
 
-  <div class="card">
-    <div class="format-toggle" id="formatToggle">
-      <button class="active" data-format="wsdc">WSDC / 2-Team</button>
-      <button data-format="bp">BP / 4-Team</button>
-    </div>
-
-    <div class="fields">
-      <div class="field">
-        <label for="teams">Teams</label>
-        <input type="number" id="teams" min="2" value="40">
-      </div>
-      <div class="field">
-        <label for="rounds">Prelim Rounds</label>
-        <input type="number" id="rounds" min="1" value="5">
-      </div>
-      <div class="field">
-        <label for="breaking">Breaking Teams</label>
-        <input type="number" id="breaking" min="1" value="16">
-      </div>
-    </div>
-
-    <div class="presets">
-      <span>Break to:</span>
-      <button data-val="2">Finals (2)</button>
-      <button data-val="4">Semis (4)</button>
-      <button data-val="8">Quarters (8)</button>
-      <button data-val="16">Octos (16)</button>
-      <button data-val="32">Double Octos (32)</button>
-    </div>
-
-    <button class="calc-btn" id="calcBtn">Calculate</button>
-    <div class="sim-badge">Runs 10,000 simulated tournaments using Tabbycat's bracket &amp; pull-up rules</div>
+  <div class="tab-bar" id="tabBar">
+    <button class="active" data-tab="calc">Break Calculator</button>
+    <button data-tab="bracket">Bracket Generator</button>
   </div>
 
-  <div id="results" class="hidden">
+  <!-- ============ TAB: BREAK CALCULATOR ============ -->
+  <div id="tab-calc">
     <div class="card">
-      <div id="verdict"></div>
+      <div class="format-toggle" id="formatToggle">
+        <button class="active" data-format="wsdc">WSDC / 2-Team</button>
+        <button data-format="bp">BP / 4-Team</button>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="teams">Teams</label><input type="number" id="teams" min="2" value="40"></div>
+        <div class="field"><label for="rounds">Prelim Rounds</label><input type="number" id="rounds" min="1" value="5"></div>
+        <div class="field"><label for="breaking">Breaking Teams</label><input type="number" id="breaking" min="1" value="16"></div>
+      </div>
+      <div class="presets">
+        <span>Break to:</span>
+        <button data-val="2">Finals (2)</button>
+        <button data-val="4">Semis (4)</button>
+        <button data-val="8">Quarters (8)</button>
+        <button data-val="16">Octos (16)</button>
+        <button data-val="32">Double Octos (32)</button>
+      </div>
+      <button class="calc-btn" id="calcBtn">Calculate</button>
+      <div class="sim-badge">Runs 10,000 simulated tournaments using Tabbycat's bracket &amp; pull-up rules</div>
     </div>
+    <div id="results" class="hidden">
+      <div class="card"><div id="verdict"></div></div>
+      <div class="card"><table class="dist-table" id="distTable"></table><div class="note" id="noteText"></div></div>
+    </div>
+  </div>
 
+  <!-- ============ TAB: BRACKET GENERATOR ============ -->
+  <div id="tab-bracket" class="hidden">
     <div class="card">
-      <table class="dist-table" id="distTable"></table>
-      <div class="note" id="noteText"></div>
+      <div class="format-toggle" id="bkFormatToggle">
+        <button class="active" data-format="wsdc">WSDC / 2-Team</button>
+        <button data-format="bp">BP / 4-Team</button>
+      </div>
+      <div class="presets" id="bkSizePresets">
+        <span>Break size:</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+        <span style="font-size:0.8rem;color:#6b7280;font-weight:600;">Custom:</span>
+        <input type="number" id="bkCustomSize" min="2" max="64" style="width:70px;padding:0.3rem 0.5rem;border:1.5px solid #e5e7eb;border-radius:6px;font-size:0.9rem;" placeholder="#">
+        <button id="bkCustomSizeBtn" style="padding:0.3rem 0.7rem;border:1.5px solid #e5e7eb;border-radius:6px;background:#fff;font-size:0.82rem;font-weight:500;color:#374151;cursor:pointer;">Apply</button>
+      </div>
+      <div class="fields" style="grid-template-columns:1fr;">
+        <div class="field">
+          <label for="bkNumRounds">Number of Outrounds</label>
+          <input type="number" id="bkNumRounds" min="1" max="6" value="4">
+        </div>
+      </div>
+      <div class="entry-toggle" id="entryToggle">
+        <button class="active" data-mode="manual">Manual Entry</button>
+        <button data-mode="paste">Paste Standings</button>
+      </div>
+      <div id="manualEntry">
+        <div class="seed-inputs" id="seedInputs"></div>
+      </div>
+      <div id="pasteEntry" class="hidden">
+        <textarea class="paste-area" id="pasteArea" placeholder="Paste team standings here (tab or comma separated)..."></textarea>
+        <div class="paste-hint">Paste from Tabbycat standings or a spreadsheet. Header rows are automatically skipped. Team names are extracted from the first text column.</div>
+      </div>
+      <button class="calc-btn" id="generateBtn">Generate Bracket</button>
+    </div>
+    <div id="bracketOutput" class="hidden">
+      <div class="card">
+        <div class="bracket-actions">
+          <button id="copySheets">Copy for Sheets</button>
+        </div>
+        <div class="bracket-wrap" id="bracketWrap"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+(function() {
+  const tabBar = document.getElementById('tabBar');
+  const container = document.getElementById('appContainer');
+  tabBar.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON') return;
+    tabBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    const tab = e.target.dataset.tab;
+    document.getElementById('tab-calc').classList.toggle('hidden', tab !== 'calc');
+    document.getElementById('tab-bracket').classList.toggle('hidden', tab !== 'bracket');
+    container.classList.toggle('wide', tab === 'bracket');
+  });
+})();
+
+// ============================================================
+// BREAK CALCULATOR (existing)
+// ============================================================
 (function() {
   const NUM_SIMS = 10000;
   let format = 'wsdc';
 
-  // --- UI wiring ---
   document.getElementById('formatToggle').addEventListener('click', function(e) {
     if (e.target.tagName !== 'BUTTON') return;
     this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     e.target.classList.add('active');
     format = e.target.dataset.format;
   });
-
   document.querySelector('.presets').addEventListener('click', function(e) {
     if (e.target.tagName !== 'BUTTON') return;
     document.getElementById('breaking').value = e.target.dataset.val;
   });
-
-  document.querySelectorAll('.field input').forEach(input => {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); calculate(); }
-    });
+  document.querySelectorAll('#tab-calc .field input').forEach(input => {
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); calculate(); } });
   });
-
   document.getElementById('calcBtn').addEventListener('click', calculate);
 
-  // --- Fisher-Yates shuffle ---
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = (Math.random() * (i + 1)) | 0;
@@ -403,444 +276,960 @@
     }
   }
 
-  // ============================================================
-  // SIMULATION ENGINE: 2-Team (WSDC)
-  // Ported from Tabbycat powerpair.py _pullup() with pullup_top
-  // ============================================================
   function simulateRound2Team(teams) {
     const N = teams.length;
-
-    // Build brackets: group indices by current wins, sorted descending
     const maxW = teams.reduce((a, b) => Math.max(a, b), 0);
     const buckets = new Array(maxW + 1);
     for (let w = 0; w <= maxW; w++) buckets[w] = [];
     for (let i = 0; i < N; i++) buckets[teams[i]].push(i);
-
-    // Collect non-empty brackets top-down
     const brackets = [];
-    for (let w = maxW; w >= 0; w--) {
-      if (buckets[w].length > 0) brackets.push(buckets[w]);
-    }
-
-    // Resolve odd brackets via pull-up (top team from next bracket below)
-    // Faithfully mirrors powerpair.py lines 190-212
+    for (let w = maxW; w >= 0; w--) { if (buckets[w].length > 0) brackets.push(buckets[w]); }
     let pullupTarget = null;
     for (let b = 0; b < brackets.length; b++) {
       const br = brackets[b];
-      if (pullupTarget !== null) {
-        // Pull first team from this bracket into the one above
-        const pulled = br.shift();
-        pullupTarget.push(pulled);
-        pullupTarget = null;
-      }
-      if (br.length % 2 !== 0) {
-        pullupTarget = br;
-      }
+      if (pullupTarget !== null) { pullupTarget.push(br.shift()); pullupTarget = null; }
+      if (br.length % 2 !== 0) pullupTarget = br;
     }
-    // If last bracket is still odd and N is odd, the phantom bye team handles it
-
-    // Simulate debates within each bracket
     for (const br of brackets) {
       if (br.length < 2) continue;
       shuffle(br);
       for (let i = 0; i < br.length - 1; i += 2) {
-        if (Math.random() < 0.5) {
-          teams[br[i]]++;
-        } else {
-          teams[br[i + 1]]++;
-        }
+        if (Math.random() < 0.5) teams[br[i]]++; else teams[br[i + 1]]++;
       }
     }
   }
 
-  // ============================================================
-  // SIMULATION ENGINE: BP (4-Team)
-  // Ported from Tabbycat bphungarian.py _define_rooms_anywhere()
-  // ============================================================
   function simulateRoundBP(teams) {
     const N = teams.length;
-
-    // Count teams at each point level and collect indices
-    const countMap = new Map();
-    const indexMap = new Map();
+    const countMap = new Map(), indexMap = new Map();
     for (let i = 0; i < N; i++) {
       const p = teams[i];
       if (!countMap.has(p)) { countMap.set(p, 0); indexMap.set(p, []); }
-      countMap.set(p, countMap.get(p) + 1);
-      indexMap.get(p).push(i);
+      countMap.set(p, countMap.get(p) + 1); indexMap.get(p).push(i);
     }
-
-    // Shuffle each group so pull-up selection and room assignment are random
     for (const indices of indexMap.values()) shuffle(indices);
-
     const sortedPoints = [...countMap.keys()].sort((a, b) => b - a);
-
-    // Port of _define_rooms_anywhere (bphungarian.py lines 111-143)
-    // Build rooms as arrays of 4 team indices
-    const rooms = [];
-    let currentIndices = [];
-    let nteams = 0;
-    let pullups_needed = 0;
-
-    // Track how many teams consumed from each point level
+    const rooms = []; let currentIndices = [], nteams = 0, pullups_needed = 0;
     const consumed = new Map();
     for (const p of sortedPoints) consumed.set(p, 0);
-
     for (const p of sortedPoints) {
-      const available = countMap.get(p);
-      const indices = indexMap.get(p);
+      const available = countMap.get(p), indices = indexMap.get(p);
       let cursor = consumed.get(p);
-
       if (pullups_needed > 0 && pullups_needed < available) {
-        // Complete the bracket above with pullups from this level
-        for (let i = 0; i < pullups_needed; i++) {
-          currentIndices.push(indices[cursor++]);
-        }
-        nteams += pullups_needed;
-        // nteams should now be divisible by 4 — form rooms
-        shuffle(currentIndices);
-        for (let i = 0; i < currentIndices.length; i += 4) {
-          rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
-        }
-        currentIndices = [];
-        nteams = 0;
-      } else if (pullups_needed > 0) {
-        // Not enough teams to fill — consume all and cascade
-        // pullups_needed >= available, so take everything
+        for (let i = 0; i < pullups_needed; i++) currentIndices.push(indices[cursor++]);
+        nteams += pullups_needed; shuffle(currentIndices);
+        for (let i = 0; i < currentIndices.length; i += 4) rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
+        currentIndices = []; nteams = 0;
       }
-
-      // Add remaining teams from this level
-      const remaining = available - (cursor - consumed.get(p));
-      for (let i = cursor; i < indices.length; i++) {
-        currentIndices.push(indices[i]);
-      }
-      consumed.set(p, indices.length);
-      nteams += (indices.length - cursor);
+      for (let i = cursor; i < indices.length; i++) currentIndices.push(indices[i]);
+      consumed.set(p, indices.length); nteams += (indices.length - cursor);
       pullups_needed = (4 - (nteams % 4)) % 4;
     }
-
-    // Final bracket
     if (currentIndices.length >= 4) {
       shuffle(currentIndices);
-      for (let i = 0; i + 3 < currentIndices.length; i += 4) {
-        rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
-      }
+      for (let i = 0; i + 3 < currentIndices.length; i += 4) rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
     }
-
-    // Assign points within each room: random permutation of [3, 2, 1, 0]
-    const awards = [3, 2, 1, 0];
-    for (const room of rooms) {
-      shuffle(room);
-      teams[room[0]] += 3;
-      teams[room[1]] += 2;
-      teams[room[2]] += 1;
-      // room[3] += 0
-    }
+    for (const room of rooms) { shuffle(room); teams[room[0]] += 3; teams[room[1]] += 2; teams[room[2]] += 1; }
   }
 
-  // ============================================================
-  // RUN SIMULATION
-  // ============================================================
   function runSimulations(fmt, N, R, B) {
     const maxLevel = fmt === 'wsdc' ? R : 3 * R;
     const isBP = fmt === 'bp';
-
-    // For odd N (2-team) or N%4!=0 (BP), add phantom teams
     let simN = N;
     if (!isBP && simN % 2 !== 0) simN++;
     if (isBP && simN % 4 !== 0) simN += (4 - simN % 4) % 4;
-
-    // Per-simulation: record distribution and bubble level
-    // Aggregate accumulators
     const levelSums = new Float64Array(maxLevel + 1);
-    const levelSumsSq = new Float64Array(maxLevel + 1);
-    // For percentiles: store per-sim counts at each level
     const levelCounts = new Array(maxLevel + 1);
     for (let l = 0; l <= maxLevel; l++) levelCounts[l] = new Uint16Array(NUM_SIMS);
-
-    // Break analysis per sim
-    const bubbleLevels = new Int16Array(NUM_SIMS);
-    const bubbleBreaking = new Float32Array(NUM_SIMS);
-    const bubbleTotal = new Float32Array(NUM_SIMS);
+    const levelTeamsTotal = new Float64Array(maxLevel + 1), levelTeamsBreaking = new Float64Array(maxLevel + 1);
+    const bubbleLevels = new Int16Array(NUM_SIMS), bubbleBreaking = new Float32Array(NUM_SIMS), bubbleTotal = new Float32Array(NUM_SIMS);
 
     for (let s = 0; s < NUM_SIMS; s++) {
-      // Initialize teams
       const teams = new Int32Array(simN);
-
-      // Run R rounds
-      for (let r = 0; r < R; r++) {
-        if (isBP) {
-          simulateRoundBP(teams);
-        } else {
-          simulateRound2Team(teams);
-        }
-      }
-
-      // Count distribution (only real teams, not phantoms)
+      for (let r = 0; r < R; r++) { if (isBP) simulateRoundBP(teams); else simulateRound2Team(teams); }
       const dist = new Uint16Array(maxLevel + 1);
-      for (let i = 0; i < N; i++) {
-        dist[teams[i]]++;
-      }
-
-      // Store per-level counts
-      for (let l = 0; l <= maxLevel; l++) {
-        levelCounts[l][s] = dist[l];
-        levelSums[l] += dist[l];
-        levelSumsSq[l] += dist[l] * dist[l];
-      }
-
-      // Determine bubble level for this sim
-      let cum = 0;
+      for (let i = 0; i < N; i++) dist[teams[i]]++;
+      for (let l = 0; l <= maxLevel; l++) { levelCounts[l][s] = dist[l]; levelSums[l] += dist[l]; }
+      let cum = 0, bubbleFound = false;
       for (let l = maxLevel; l >= 0; l--) {
-        cum += dist[l];
-        if (cum >= B) {
-          bubbleLevels[s] = l;
-          const above = cum - dist[l];
-          bubbleBreaking[s] = B - above;
-          bubbleTotal[s] = dist[l];
-          break;
-        }
+        if (dist[l] === 0) continue; cum += dist[l]; levelTeamsTotal[l] += dist[l];
+        if (!bubbleFound && cum >= B) { bubbleLevels[s] = l; const above = cum - dist[l]; const breaking = B - above; bubbleBreaking[s] = breaking; bubbleTotal[s] = dist[l]; levelTeamsBreaking[l] += breaking; bubbleFound = true; }
+        else if (!bubbleFound) { levelTeamsBreaking[l] += dist[l]; }
       }
     }
 
-    // Aggregate statistics per level
     const stats = [];
     for (let l = maxLevel; l >= 0; l--) {
       const mean = levelSums[l] / NUM_SIMS;
-      if (mean < 0.005) continue; // skip negligible levels
-
-      // Sort for percentiles
+      if (mean < 0.005) continue;
       const sorted = Array.from(levelCounts[l]).sort((a, b) => a - b);
-      const p5 = sorted[Math.floor(NUM_SIMS * 0.05)];
-      const p25 = sorted[Math.floor(NUM_SIMS * 0.25)];
-      const p75 = sorted[Math.floor(NUM_SIMS * 0.75)];
-      const p95 = sorted[Math.floor(NUM_SIMS * 0.95)];
-      const min = sorted[0];
-      const max = sorted[NUM_SIMS - 1];
-
-      // P(all break at this level) = fraction of sims where bubble is at or below this level
-      let pAllBreak = 0;
-      let pAnyBreak = 0;
-      let pBubble = 0;
-      for (let s = 0; s < NUM_SIMS; s++) {
-        if (bubbleLevels[s] < l) pAllBreak++;
-        else if (bubbleLevels[s] === l) { pAnyBreak++; pBubble++; }
-      }
-      pAllBreak /= NUM_SIMS;
-      pBubble /= NUM_SIMS;
-      pAnyBreak = pAllBreak + pBubble; // any = guaranteed + bubble chance
-
-      stats.push({ level: l, mean, p5, p25, p75, p95, min, max, pAllBreak, pAnyBreak, pBubble });
+      let pAllBreak = 0, pBubble = 0;
+      for (let s = 0; s < NUM_SIMS; s++) { if (bubbleLevels[s] < l) pAllBreak++; else if (bubbleLevels[s] === l) pBubble++; }
+      pAllBreak /= NUM_SIMS; pBubble /= NUM_SIMS;
+      const pTeamBreaks = levelTeamsTotal[l] > 0 ? levelTeamsBreaking[l] / levelTeamsTotal[l] : 0;
+      stats.push({ level: l, mean, p5: sorted[Math.floor(NUM_SIMS*0.05)], p95: sorted[Math.floor(NUM_SIMS*0.95)], pAllBreak, pAnyBreak: pAllBreak + pBubble, pBubble, pTeamBreaks });
     }
 
-    // Verdict: thresholds
-    // "Safe" = lowest level where pAllBreak >= 0.99
-    // "Likely" = lowest level where pAllBreak + pBubble >= 0.50
-    // Bubble analysis
-    let safeLevel = null, bubbleLevel = null;
-    let avgBubbleBreaking = 0, avgBubbleTotal = 0, bubblePct = 0;
-
-    for (let i = stats.length - 1; i >= 0; i--) {
-      if (stats[i].pAllBreak >= 0.99 && safeLevel === null) {
-        safeLevel = stats[i].level;
-      }
-    }
-    // safe is the LOWEST level with >= 99% all break
-    // walk from top down to find the first with < 99%
-    safeLevel = null;
+    let safeLevel = null;
+    for (let i = stats.length - 1; i >= 0; i--) { if (stats[i].pAllBreak >= 0.99) { safeLevel = stats[i].level; break; } }
+    const bubbles = [];
     for (const s of stats) {
-      if (s.pAllBreak >= 0.99) {
-        safeLevel = s.level;
-      } else {
-        break;
-      }
+      if (s.pBubble < 0.01) continue;
+      let sumB = 0, sumT = 0, cnt = 0;
+      for (let sim = 0; sim < NUM_SIMS; sim++) { if (bubbleLevels[sim] === s.level) { sumB += bubbleBreaking[sim]; sumT += bubbleTotal[sim]; cnt++; } }
+      bubbles.push({ level: s.level, pct: s.pBubble, avgBreaking: cnt > 0 ? sumB/cnt : 0, avgTotal: cnt > 0 ? sumT/cnt : 0 });
     }
-    // Actually: safeLevel should be the lowest level where you're safe.
-    // Walk from bottom up: first level with pAllBreak >= 0.99
-    for (let i = stats.length - 1; i >= 0; i--) {
-      if (stats[i].pAllBreak >= 0.99) { safeLevel = stats[i].level; break; }
-    }
-
-    // Bubble = level with highest pBubble
-    let maxBubblePct = 0;
-    for (const s of stats) {
-      if (s.pBubble > maxBubblePct) {
-        maxBubblePct = s.pBubble;
-        bubbleLevel = s.level;
-        bubblePct = s.pBubble;
-      }
-    }
-
-    // Average bubble stats
-    let bCount = 0;
-    for (let s = 0; s < NUM_SIMS; s++) {
-      if (bubbleLevels[s] === bubbleLevel) {
-        avgBubbleBreaking += bubbleBreaking[s];
-        avgBubbleTotal += bubbleTotal[s];
-        bCount++;
-      }
-    }
-    if (bCount > 0) {
-      avgBubbleBreaking /= bCount;
-      avgBubbleTotal /= bCount;
-    }
-
-    // Check for near-clean break (pBubble < 1% at the main bubble level)
-    const isClean = bubbleLevel !== null && safeLevel !== null && safeLevel <= bubbleLevel;
-
-    return { stats, safeLevel, bubbleLevel, bubblePct, avgBubbleBreaking, avgBubbleTotal, isClean };
+    bubbles.sort((a, b) => b.level - a.level);
+    return { stats, safeLevel, bubbles, isClean: bubbles.reduce((s, b) => s + b.pct, 0) < 0.02 };
   }
 
-  // ============================================================
-  // CALCULATE AND RENDER
-  // ============================================================
   function calculate() {
-    const N = parseInt(document.getElementById('teams').value);
-    const R = parseInt(document.getElementById('rounds').value);
-    const B = parseInt(document.getElementById('breaking').value);
-    const resultsEl = document.getElementById('results');
-    const verdictEl = document.getElementById('verdict');
-    const tableEl = document.getElementById('distTable');
-    const noteEl = document.getElementById('noteText');
+    const N = parseInt(document.getElementById('teams').value), R = parseInt(document.getElementById('rounds').value), B = parseInt(document.getElementById('breaking').value);
+    const resultsEl = document.getElementById('results'), verdictEl = document.getElementById('verdict'), tableEl = document.getElementById('distTable'), noteEl = document.getElementById('noteText');
     const label = format === 'wsdc' ? 'wins' : 'points';
+    if (isNaN(N)||isNaN(R)||isNaN(B)||N<2||R<1||B<1) { resultsEl.classList.remove('hidden'); verdictEl.innerHTML='<div class="error">Please enter valid values.</div>'; tableEl.innerHTML=''; noteEl.innerHTML=''; return; }
+    if (format==='bp'&&N<4) { resultsEl.classList.remove('hidden'); verdictEl.innerHTML='<div class="error">BP requires at least 4 teams.</div>'; tableEl.innerHTML=''; noteEl.innerHTML=''; return; }
+    if (B>N) { resultsEl.classList.remove('hidden'); verdictEl.innerHTML='<div class="error">Breaking teams cannot exceed total teams.</div>'; tableEl.innerHTML=''; noteEl.innerHTML=''; return; }
+    if (B===N) { resultsEl.classList.remove('hidden'); verdictEl.innerHTML='<div class="verdict clean"><div class="headline">Everyone breaks!</div></div>'; tableEl.innerHTML=''; noteEl.innerHTML=''; return; }
 
-    // Validation
-    if (isNaN(N) || isNaN(R) || isNaN(B) || N < 2 || R < 1 || B < 1) {
-      resultsEl.classList.remove('hidden');
-      verdictEl.innerHTML = '<div class="error">Please enter valid values (teams &ge; 2, rounds &ge; 1, breaking &ge; 1).</div>';
-      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
-    }
-    if (format === 'bp' && N < 4) {
-      resultsEl.classList.remove('hidden');
-      verdictEl.innerHTML = '<div class="error">BP requires at least 4 teams.</div>';
-      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
-    }
-    if (B > N) {
-      resultsEl.classList.remove('hidden');
-      verdictEl.innerHTML = '<div class="error">Breaking teams cannot exceed total teams.</div>';
-      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
-    }
-    if (B === N) {
-      resultsEl.classList.remove('hidden');
-      verdictEl.innerHTML = '<div class="verdict clean"><div class="headline">Everyone breaks!</div><div class="detail">All ' + N + ' teams advance to elimination rounds.</div></div>';
-      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
-    }
-
-    // Run simulation
-    const result = runSimulations(format, N, R, B);
-    const { stats, safeLevel, bubbleLevel, bubblePct, avgBubbleBreaking, avgBubbleTotal, isClean } = result;
-
-    // --- Verdict ---
+    const { stats, safeLevel, bubbles, isClean } = runSimulations(format, N, R, B);
     let vh = '';
-    if (isClean || bubblePct < 0.02) {
-      // Near-clean break
-      const lvl = safeLevel !== null ? safeLevel : (stats.length > 0 ? stats[0].level : 0);
-      const rec = format === 'wsdc' ? lvl + '&#8211;' + (R - lvl) : lvl + ' ' + label;
-      vh = '<div class="verdict clean">';
-      vh += '<div class="headline">Clean break at ' + lvl + ' ' + label + '</div>';
-      vh += '<div class="detail">Teams on <strong>' + rec + '</strong> or better break in virtually all simulations.</div>';
-      vh += '</div>';
+    if (isClean) {
+      const lvl = safeLevel !== null ? safeLevel : stats[0]?.level || 0;
+      const rec = format === 'wsdc' ? lvl+'&#8211;'+(R-lvl) : lvl+' '+label;
+      vh = '<div class="verdict clean"><div class="headline">Clean break at '+lvl+' '+label+'</div><div class="detail">Teams on <strong>'+rec+'</strong> or better break in virtually all simulations.</div></div>';
     } else {
-      const safeRec = safeLevel !== null ? (format === 'wsdc' ? safeLevel + '&#8211;' + (R - safeLevel) : safeLevel + ' ' + label) : 'N/A';
-      const bubbleRec = bubbleLevel !== null ? (format === 'wsdc' ? bubbleLevel + '&#8211;' + (R - bubbleLevel) : bubbleLevel + ' ' + label) : 'N/A';
-      vh = '<div class="verdict bubble">';
-      vh += '<div class="headline">Break is on the bubble</div>';
-      vh += '<div class="detail">';
-      if (safeLevel !== null) {
-        vh += '<strong>Safe:</strong> ' + safeLevel + ' ' + label + ' (' + safeRec + ') &mdash; breaks in &ge;99% of simulations<br>';
+      const fmtRec = (l) => format==='wsdc' ? l+'&#8211;'+(R-l) : l+' '+label;
+      vh = '<div class="verdict bubble"><div class="headline">Break is on the bubble</div><div class="detail">';
+      if (safeLevel !== null) vh += '<strong>Safe:</strong> '+safeLevel+' '+label+' ('+fmtRec(safeLevel)+') &mdash; breaks in &ge;99% of simulations';
+      vh += '</div>';
+      for (let i = 0; i < bubbles.length; i++) {
+        const b = bubbles[i], bRec = fmtRec(b.level);
+        const cl = bubbles.length===1?'Bubble':i===0?'Worst case':i===bubbles.length-1?'Best case':'Middle';
+        vh += '<div class="bubble-info"><strong>'+cl+':</strong> '+b.level+' '+label+' ('+bRec+') &mdash; bubble in '+(b.pct*100).toFixed(0)+'% of sims<br>~<strong>'+b.avgBreaking.toFixed(1)+'</strong> of ~<strong>'+b.avgTotal.toFixed(1)+'</strong> teams break</div>';
       }
-      vh += '<strong>Bubble:</strong> ' + bubbleLevel + ' ' + label + ' (' + bubbleRec + ') &mdash; this is the break threshold in ' + (bubblePct * 100).toFixed(0) + '% of simulations';
-      vh += '</div>';
-      vh += '<div class="bubble-info">';
-      vh += 'When on bubble: ~<strong>' + avgBubbleBreaking.toFixed(1) + '</strong> of ~<strong>' + avgBubbleTotal.toFixed(1) + '</strong> teams on ' + bubbleRec + ' break (decided by speaker scores)';
-      vh += '</div>';
       vh += '</div>';
     }
     verdictEl.innerHTML = vh;
 
-    // --- Distribution Table ---
-    const maxMean = Math.max(...stats.map(s => s.mean));
-    const maxP95 = Math.max(...stats.map(s => s.p95));
-    const barMax = Math.max(maxMean, maxP95, 1);
-
-    let cumMean = 0;
-    let html = '<thead><tr>';
-    html += '<th>' + (format === 'wsdc' ? 'Wins' : 'Pts') + '</th>';
-    if (format === 'wsdc') html += '<th>Record</th>';
-    html += '<th class="r">Avg Teams</th>';
-    html += '<th class="r hide-mobile">Range (5&#8211;95%)</th>';
-    html += '<th class="r">Cumulative</th>';
-    html += '<th class="c">P(break)</th>';
-    html += '<th>Status</th>';
-    html += '<th class="bar-cell"></th>';
-    html += '</tr></thead><tbody>';
-
-    let breakLineInserted = false;
-
+    const barMax = Math.max(...stats.map(s => s.mean), ...stats.map(s => s.p95), 1);
+    let cumMean = 0, html = '<thead><tr><th>'+(format==='wsdc'?'Wins':'Pts')+'</th>';
+    if (format==='wsdc') html += '<th>Record</th>';
+    html += '<th class="r">Avg</th><th class="r hide-mobile">Range</th><th class="r">Cum.</th><th class="c">Chance</th><th>Status</th><th class="bar-cell"></th></tr></thead><tbody>';
+    let blInserted = false;
     for (const s of stats) {
       cumMean += s.mean;
-
-      // Determine row status
       let rowClass, fillClass, badgeClass, statusText;
-      if (s.pAllBreak >= 0.99) {
-        rowClass = 'row-break'; fillClass = 'fill-break'; badgeClass = 'badge-break'; statusText = 'Break';
-      } else if (s.pAnyBreak > 0.01) {
-        rowClass = 'row-bubble'; fillClass = 'fill-bubble'; badgeClass = 'badge-bubble'; statusText = 'Bubble';
-      } else {
-        rowClass = 'row-miss'; fillClass = 'fill-miss'; badgeClass = 'badge-miss'; statusText = 'Miss';
-      }
-
-      // Break line
-      if (!breakLineInserted && (statusText === 'Bubble' || statusText === 'Miss')) {
-        const cols = format === 'wsdc' ? 8 : 7;
-        html += '<tr class="break-line-row"><td colspan="' + cols + '"></td></tr>';
-        breakLineInserted = true;
-      }
-
-      // P(break) display: show P(all break) for break rows, P(any break) for bubble
-      let pDisplay, pClass;
-      if (s.pAllBreak >= 0.99) {
-        pDisplay = '100%'; pClass = 'prob-high';
-      } else if (s.pAnyBreak >= 0.99) {
-        pDisplay = (s.pAllBreak * 100).toFixed(0) + '&#8211;100%'; pClass = 'prob-mid';
-      } else if (s.pAnyBreak > 0.01) {
-        pDisplay = (s.pAllBreak * 100).toFixed(0) + '&#8211;' + (s.pAnyBreak * 100).toFixed(0) + '%'; pClass = 'prob-mid';
-      } else {
-        pDisplay = '0%'; pClass = 'prob-low';
-      }
-
-      // Bar: range band + mean bar
-      const rangeLeft = (s.p5 / barMax * 100).toFixed(1);
-      const rangeWidth = Math.max(1, ((s.p95 - s.p5) / barMax * 100)).toFixed(1);
-      const meanWidth = Math.max(1, (s.mean / barMax * 100)).toFixed(1);
-
-      html += '<tr class="' + rowClass + '">';
-      html += '<td><strong>' + s.level + '</strong></td>';
-      if (format === 'wsdc') html += '<td>' + s.level + '&#8211;' + (R - s.level) + '</td>';
-      html += '<td class="r">' + s.mean.toFixed(1) + '</td>';
-      html += '<td class="r hide-mobile">' + s.p5 + '&#8211;' + s.p95 + '</td>';
-      html += '<td class="r">' + cumMean.toFixed(1) + '</td>';
-      html += '<td class="c ' + pClass + '">' + pDisplay + '</td>';
-      html += '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>';
-      html += '<td class="bar-cell"><div class="bar-wrap">';
-      html += '<div class="bar-range ' + fillClass + '" style="left:' + rangeLeft + '%;width:' + rangeWidth + '%"></div>';
-      html += '<div class="bar-mean ' + fillClass + '" style="width:' + meanWidth + '%"></div>';
-      html += '</div></td>';
-      html += '</tr>';
+      if (s.pAllBreak>=0.99) { rowClass='row-break'; fillClass='fill-break'; badgeClass='badge-break'; statusText='Break'; }
+      else if (s.pAnyBreak>0.01) { rowClass='row-bubble'; fillClass='fill-bubble'; badgeClass='badge-bubble'; statusText='Bubble'; }
+      else { rowClass='row-miss'; fillClass='fill-miss'; badgeClass='badge-miss'; statusText='Miss'; }
+      if (!blInserted && statusText !== 'Break') { html += '<tr class="break-line-row"><td colspan="'+(format==='wsdc'?8:7)+'"></td></tr>'; blInserted = true; }
+      const pct = s.pTeamBreaks*100;
+      let pD, pC;
+      if (pct>=99.5) { pD='100%'; pC='prob-high'; } else if (pct>=50) { pD=pct.toFixed(0)+'%'; pC='prob-high'; } else if (pct>=1) { pD=pct.toFixed(0)+'%'; pC='prob-mid'; } else if (pct>0.05) { pD='&lt;1%'; pC='prob-low'; } else { pD='0%'; pC='prob-low'; }
+      html += '<tr class="'+rowClass+'"><td><strong>'+s.level+'</strong></td>';
+      if (format==='wsdc') html += '<td>'+s.level+'&#8211;'+(R-s.level)+'</td>';
+      html += '<td class="r">'+s.mean.toFixed(1)+'</td><td class="r hide-mobile">'+s.p5+'&#8211;'+s.p95+'</td><td class="r">'+cumMean.toFixed(1)+'</td>';
+      html += '<td class="c '+pC+'">'+pD+'</td><td><span class="badge '+badgeClass+'">'+statusText+'</span></td>';
+      html += '<td class="bar-cell"><div class="bar-wrap"><div class="bar-range '+fillClass+'" style="left:'+(s.p5/barMax*100).toFixed(1)+'%;width:'+Math.max(1,(s.p95-s.p5)/barMax*100).toFixed(1)+'%"></div><div class="bar-mean '+fillClass+'" style="width:'+Math.max(1,s.mean/barMax*100).toFixed(1)+'%"></div></div></td></tr>';
     }
-
     html += '</tbody>';
     tableEl.innerHTML = html;
-
-    // Note
-    noteEl.innerHTML = 'Based on ' + NUM_SIMS.toLocaleString() + ' Monte Carlo simulations using Tabbycat\'s power-pairing algorithm with pull-up bracket resolution. '
-      + (format === 'wsdc'
-        ? 'Each round: teams grouped by wins, odd brackets resolved via pull-up (top team from bracket below), 50/50 random outcomes. '
-        : 'Each round: teams grouped by points, rooms of 4 formed with pull-ups per WUDC rules, random 1st/2nd/3rd/4th placement. ')
-      + 'Speaker score tiebreakers determine which teams on the bubble advance in real tournaments.';
-
+    noteEl.innerHTML = 'Based on '+NUM_SIMS.toLocaleString()+' Monte Carlo simulations using Tabbycat\'s power-pairing with pull-up bracket resolution. Speaker score tiebreakers determine which bubble teams advance.';
     resultsEl.classList.remove('hidden');
     resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+})();
+
+// ============================================================
+// BRACKET GENERATOR
+// ============================================================
+(function() {
+  let bkFormat = 'wsdc';
+  let bkBreakSize = 16;
+  let entryMode = 'manual';
+  let lastBracketData = null;
+
+  const WSDC_SIZES = [
+    { val: 2, label: 'Finals (2)' }, { val: 4, label: 'Semis (4)' },
+    { val: 8, label: 'QF (8)' }, { val: 12, label: 'Partial Octos (12)' },
+    { val: 16, label: 'Octos (16)' }, { val: 20, label: 'Partial DO (20)' },
+    { val: 24, label: 'Partial DO (24)' }, { val: 32, label: 'DO (32)' },
+  ];
+  const BP_SIZES = [
+    { val: 4, label: 'Final (4)' }, { val: 8, label: 'Semis (8)' },
+    { val: 12, label: 'Partial QF (12)' }, { val: 16, label: 'QF (16)' },
+    { val: 24, label: 'Partial Octos (24)' }, { val: 32, label: 'Octos (32)' },
+  ];
+
+  const ROUND_NAMES = ['Grand Final', 'Semifinals', 'Quarterfinals', 'Octofinals', 'Double Octofinals', 'Triple Octofinals'];
+
+  function getRoundNames(numRounds) {
+    return ROUND_NAMES.slice(0, numRounds).reverse();
+  }
+
+  function renderSizePresets() {
+    const container = document.getElementById('bkSizePresets');
+    const opts = bkFormat === 'wsdc' ? WSDC_SIZES : BP_SIZES;
+    let html = '<span>Break size:</span>';
+    for (const o of opts) {
+      const active = o.val === bkBreakSize ? ' style="border-color:#6366f1;color:#6366f1;background:#f5f3ff;"' : '';
+      html += '<button data-val="'+o.val+'"'+active+'>'+o.label+'</button>';
+    }
+    container.innerHTML = html;
+  }
+
+  function nextpow2(n) { return 1 << Math.ceil(Math.log2(n)); }
+
+  function selectBreakSize(val) {
+    bkBreakSize = val;
+    renderSizePresets();
+    // Auto-suggest outrounds: for partial breaks, count the partial round + subsequent full rounds
+    let nr;
+    if (bkFormat === 'wsdc') {
+      const isPow2 = (val & (val - 1)) === 0;
+      // Full rounds from next power of 2 down to finals, plus 1 partial round if not clean
+      nr = Math.log2(nextpow2(val)) + (isPow2 ? 0 : 0);
+      // Actually: total rounds = log2(nextpow2(breakSize))
+      // For 12: nextpow2=16, log2(16)=4 → partial octos + QF + SF + F = 4
+      // For 16: nextpow2=16, log2(16)=4 → octos + QF + SF + F = 4
+      // For 24: nextpow2=32, log2(32)=5 → partial DO + octos + QF + SF + F = 5
+      nr = Math.log2(nextpow2(val));
+    } else {
+      // BP: total rounds = log2(nextpow2(breakSize)) - 1
+      nr = Math.log2(nextpow2(val)) - 1;
+    }
+    document.getElementById('bkNumRounds').value = Math.max(1, Math.ceil(nr));
+    updateSeedInputs();
+  }
+
+  function updateSeedInputs() {
+    const container = document.getElementById('seedInputs');
+    let html = '';
+    for (let i = 1; i <= bkBreakSize; i++) {
+      html += '<div class="seed-row"><span class="seed-num">'+i+'</span><input type="text" id="seed-'+i+'" placeholder="Seed '+i+'"></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  // Format toggle
+  document.getElementById('bkFormatToggle').addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON') return;
+    this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    bkFormat = e.target.dataset.format;
+    // Pick a valid default size for the new format
+    const opts = bkFormat === 'wsdc' ? WSDC_SIZES : BP_SIZES;
+    if (!opts.find(o => o.val === bkBreakSize)) bkBreakSize = opts[opts.length - 2].val;
+    selectBreakSize(bkBreakSize);
+  });
+
+  // Break size presets
+  document.getElementById('bkSizePresets').addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON') return;
+    selectBreakSize(parseInt(e.target.dataset.val));
+  });
+
+  // Custom break size
+  document.getElementById('bkCustomSizeBtn').addEventListener('click', function() {
+    const val = parseInt(document.getElementById('bkCustomSize').value);
+    if (!val || val < 2) return;
+    if (bkFormat === 'bp' && val < 4) return;
+    selectBreakSize(val);
+  });
+  document.getElementById('bkCustomSize').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('bkCustomSizeBtn').click();
+  });
+
+  // Entry mode toggle
+  document.getElementById('entryToggle').addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON') return;
+    this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    entryMode = e.target.dataset.mode;
+    document.getElementById('manualEntry').classList.toggle('hidden', entryMode !== 'manual');
+    document.getElementById('pasteEntry').classList.toggle('hidden', entryMode !== 'paste');
+  });
+
+  // Generate
+  document.getElementById('generateBtn').addEventListener('click', generateBracket);
+  document.getElementById('copySheets').addEventListener('click', copyForSheets);
+
+  // Init
+  renderSizePresets();
+  updateSeedInputs();
+
+  function getTeamNames() {
+    const bs = bkBreakSize;
+    const names = [];
+    if (entryMode === 'manual') {
+      for (let i = 1; i <= bs; i++) {
+        const inp = document.getElementById('seed-'+i);
+        names.push(inp ? inp.value.trim() || 'Seed '+i : 'Seed '+i);
+      }
+    } else {
+      const text = document.getElementById('pasteArea').value.trim();
+      if (!text) { for (let i = 1; i <= bs; i++) names.push('Seed '+i); return names; }
+      const allLines = text.split('\n').map(l => l.trim()).filter(l => l);
+      // Skip header row: if the first row has no leading number, it's likely a header
+      let startIdx = 0;
+      if (allLines.length > 1) {
+        const firstParts = allLines[0].split(/[\t,]+/);
+        const firstCell = firstParts[0].trim();
+        // Header if first cell is non-numeric text like "Rank", "Team", "#", etc.
+        if (firstCell && !/^\d+$/.test(firstCell)) startIdx = 1;
+      }
+      const lines = allLines.slice(startIdx);
+      for (let i = 0; i < bs; i++) {
+        if (i < lines.length) {
+          const parts = lines[i].split(/[\t,]+/);
+          // Find the first non-numeric, non-empty part as the team name
+          // Skip rank numbers at the start
+          let name = null;
+          for (const p of parts) {
+            const trimmed = p.trim();
+            if (!trimmed) continue;
+            if (/^\d+$/.test(trimmed) && !name) continue; // skip rank number
+            name = trimmed;
+            break;
+          }
+          names.push(name || 'Seed '+(i+1));
+        } else {
+          names.push('Seed '+(i+1));
+        }
+      }
+    }
+    return names;
+  }
+
+  // ============================================================
+  // WSDC BRACKET: fold pairing + visual tree
+  // ============================================================
+
+  // Get visual order of first-round matchups for proper bracket tree layout
+  function getVisualOrder(numMatchups) {
+    if (numMatchups === 1) return [0];
+    const prev = getVisualOrder(numMatchups / 2);
+    const result = [];
+    for (const i of prev) {
+      result.push(i);
+      result.push(numMatchups - 1 - i);
+    }
+    return result;
+  }
+
+  function generateWSDBracket(teamNames, numRounds) {
+    const n = teamNames.length;
+    const isPow2 = (n & (n - 1)) === 0 && n > 1;
+    const roundNames = getRoundNames(numRounds);
+
+    if (isPow2) {
+      // Standard full bracket — fold all teams
+      const numMatchups = n / 2;
+      const matchups = [];
+      for (let i = 0; i < numMatchups; i++) {
+        matchups.push({ top: { seed: i + 1, name: teamNames[i] }, bot: { seed: n - i, name: teamNames[n - 1 - i] } });
+      }
+      const order = getVisualOrder(numMatchups);
+      const rounds = [{ name: roundNames[0], matchups: order.map(i => matchups[i]) }];
+      let prevCount = numMatchups;
+      for (let r = 1; r < numRounds; r++) {
+        const count = prevCount / 2;
+        const ms = [];
+        for (let j = 0; j < count; j++) ms.push({ top: null, bot: null });
+        rounds.push({ name: roundNames[r], matchups: ms });
+        prevCount = count;
+      }
+      return rounds;
+    }
+
+    // Partial break: some teams get byes
+    // Ported from Tabbycat utils.py partial_break_round_split
+    const secondRoundSize = nextpow2(n) / 2; // teams in the second elim round
+    const debates = n - secondRoundSize;       // matchups in the partial first round
+    const bypassing = secondRoundSize - debates; // teams that get byes
+
+    // First round: fold the non-bypassing teams (seeds bypassing+1 to n)
+    const debatingTeams = teamNames.slice(bypassing);
+    const numDebating = debatingTeams.length; // = 2 * debates
+    const firstRoundMatchups = [];
+    for (let i = 0; i < debates; i++) {
+      firstRoundMatchups.push({
+        top: { seed: bypassing + i + 1, name: debatingTeams[i] },
+        bot: { seed: bypassing + numDebating - i, name: debatingTeams[numDebating - 1 - i] },
+      });
+    }
+
+    // Second round: bypassing teams + winners, folded
+    // In Tabbycat, the second round teams = [bypass_1..bypass_n, winner_1..winner_debates]
+    // Then folded: seed i vs seed (secondRoundSize+1-i)
+    // The visual needs to show: each second-round matchup is fed by one bye + one first-round matchup
+    // Second round matchup i: bypass seed (i+1) vs winner of first-round matchup (debates-i)
+    // Visual order for the second round: use getVisualOrder(secondRoundSize/2)
+    const secondRoundMatchups = [];
+    for (let i = 0; i < secondRoundSize / 2; i++) {
+      // Fold: bypass seed i+1 vs first-round winner at position (secondRoundSize/2 - 1 - i)
+      const byeSeed = i + 1;
+      secondRoundMatchups.push({
+        top: { seed: byeSeed, name: teamNames[byeSeed - 1] }, // bye team pre-filled
+        bot: null, // winner of a first-round matchup — user fills in
+        isByeFeeder: true,
+      });
+    }
+
+    // Build visual-ordered rounds
+    // Round 0: partial round — mix of byes and matchups
+    // We need to interleave byes and matchups so the bracket tree works
+    // The second round has secondRoundSize/2 matchups, ordered by getVisualOrder
+    const secondOrder = getVisualOrder(secondRoundSize / 2);
+
+    // For each visual position in round 1, we need the corresponding first-round entries
+    // Each round-1 matchup at visual position j (from secondOrder[j]) has:
+    //   top: bye for seed (orig_matchup_idx + 1)
+    //   bot: winner of first-round matchup (debates - 1 - orig_matchup_idx)
+    // The first round entries in visual order: for each round-1 matchup, show the bye + the matchup
+    const firstRoundVisual = []; // items are either {type:'bye', ...} or {type:'matchup', ...}
+    const secondRoundVisual = [];
+
+    for (const origIdx of secondOrder) {
+      // This second-round matchup: bypass seed (origIdx+1) vs winner of first-round debate
+      // First-round debate index that feeds this: (debates - 1 - origIdx) if origIdx < debates, else it's another bye
+      const byeSeed = origIdx + 1;
+
+      if (origIdx < debates) {
+        // This matchup has a bye team on top and a first-round matchup feeding the bottom
+        const frIdx = debates - 1 - origIdx; // the first-round matchup index
+        firstRoundVisual.push({ type: 'bye', seed: byeSeed, name: teamNames[byeSeed - 1] });
+        firstRoundVisual.push({ type: 'matchup', ...firstRoundMatchups[frIdx] });
+        secondRoundVisual.push({
+          top: { seed: byeSeed, name: teamNames[byeSeed - 1] },
+          bot: null, // winner fills in
+        });
+      } else {
+        // Both slots in this second-round matchup are byes (all bypassing)
+        const byeSeed2 = secondRoundSize - origIdx;
+        firstRoundVisual.push({ type: 'bye', seed: byeSeed, name: teamNames[byeSeed - 1] });
+        firstRoundVisual.push({ type: 'bye', seed: byeSeed2, name: teamNames[byeSeed2 - 1] });
+        secondRoundVisual.push({
+          top: { seed: byeSeed, name: teamNames[byeSeed - 1] },
+          bot: { seed: byeSeed2, name: teamNames[byeSeed2 - 1] },
+        });
+      }
+    }
+
+    // Build rounds
+    // Round 0 (partial): byes and matchups interleaved
+    const round0Matchups = [];
+    for (let i = 0; i < firstRoundVisual.length; i += 2) {
+      const a = firstRoundVisual[i];
+      const b = firstRoundVisual[i + 1];
+      if (a.type === 'bye' && b.type === 'matchup') {
+        // Bye on top, matchup on bottom — show as: bye team + matchup pair
+        round0Matchups.push({
+          top: { seed: a.seed, name: a.name, isBye: true },
+          bot: null, isByeSlot: true, // this is a bye, not a real matchup
+        });
+        round0Matchups.push({ top: b.top, bot: b.bot });
+      } else if (a.type === 'bye' && b.type === 'bye') {
+        // Both byes
+        round0Matchups.push({ top: { seed: a.seed, name: a.name, isBye: true }, bot: null, isByeSlot: true });
+        round0Matchups.push({ top: { seed: b.seed, name: b.name, isBye: true }, bot: null, isByeSlot: true });
+      } else {
+        round0Matchups.push({ top: a.top || { seed: a.seed, name: a.name }, bot: a.bot || b.top || { seed: b.seed, name: b.name } });
+        round0Matchups.push({ top: null, bot: null });
+      }
+    }
+
+    const rounds = [{ name: roundNames[0] + ' (Partial)', matchups: round0Matchups }];
+    rounds.push({ name: roundNames[1], matchups: secondRoundVisual });
+
+    // Remaining rounds
+    let prevCount = secondRoundVisual.length;
+    for (let r = 2; r < numRounds; r++) {
+      const count = prevCount / 2;
+      const ms = [];
+      for (let j = 0; j < count; j++) ms.push({ top: null, bot: null });
+      rounds.push({ name: roundNames[r], matchups: ms });
+      prevCount = count;
+    }
+
+    return rounds;
+  }
+
+  function renderWSDBracket(rounds) {
+    const wrap = document.getElementById('bracketWrap');
+    const MW = 170, MH = 54, MH_BYE = 28, MGAP = 10, CONN = 32, LABEL_H = 22;
+    const numR = rounds.length;
+    const firstCount = rounds[0].matchups.length;
+
+    // Compute height for each first-round item (byes are shorter)
+    const heights = rounds[0].matchups.map(m => m.isByeSlot ? MH_BYE : MH);
+    const totalH = LABEL_H + heights.reduce((a, b) => a + b, 0) + (firstCount - 1) * MGAP;
+    const totalW = numR * MW + (numR - 1) * CONN;
+
+    // Compute center Y for each matchup in each round
+    const centers = [];
+    // Round 0: variable heights
+    const c0 = [];
+    let yAccum = LABEL_H;
+    for (let i = 0; i < firstCount; i++) {
+      c0.push(yAccum + heights[i] / 2);
+      yAccum += heights[i] + MGAP;
+    }
+    centers.push(c0);
+    // Subsequent rounds: center between feeders
+    for (let r = 1; r < numR; r++) {
+      const c = [];
+      const count = rounds[r].matchups.length;
+      for (let i = 0; i < count; i++) c.push((centers[r - 1][i * 2] + centers[r - 1][i * 2 + 1]) / 2);
+      centers.push(c);
+    }
+
+    let html = '<div class="bracket-container" style="width:'+totalW+'px;height:'+totalH+'px;">';
+
+    // SVG connector lines
+    html += '<svg width="'+totalW+'" height="'+totalH+'" xmlns="http://www.w3.org/2000/svg">';
+    for (let r = 0; r < numR - 1; r++) {
+      const x1 = r * (MW + CONN) + MW;
+      const x2 = (r + 1) * (MW + CONN);
+      const xMid = x1 + CONN / 2;
+      const count = rounds[r].matchups.length;
+      for (let i = 0; i < count; i += 2) {
+        const yTop = centers[r][i];
+        const yBot = centers[r][i + 1];
+        const yNext = centers[r + 1][i / 2];
+        html += '<line x1="'+x1+'" y1="'+yTop+'" x2="'+xMid+'" y2="'+yTop+'" stroke="#d1d5db" stroke-width="2"/>';
+        html += '<line x1="'+x1+'" y1="'+yBot+'" x2="'+xMid+'" y2="'+yBot+'" stroke="#d1d5db" stroke-width="2"/>';
+        html += '<line x1="'+xMid+'" y1="'+yTop+'" x2="'+xMid+'" y2="'+yBot+'" stroke="#d1d5db" stroke-width="2"/>';
+        html += '<line x1="'+xMid+'" y1="'+yNext+'" x2="'+x2+'" y2="'+yNext+'" stroke="#d1d5db" stroke-width="2"/>';
+      }
+    }
+    html += '</svg>';
+
+    // Matchup boxes
+    for (let r = 0; r < numR; r++) {
+      const x = r * (MW + CONN);
+      html += '<div class="bracket-round-label" style="left:'+x+'px;top:0;width:'+MW+'px;">'+rounds[r].name+'</div>';
+      for (let i = 0; i < rounds[r].matchups.length; i++) {
+        const m = rounds[r].matchups[i];
+        const h = r === 0 ? heights[i] : MH;
+        const y = centers[r][i] - h / 2;
+        const isFinal = r === numR - 1;
+        const isBye = !!m.isByeSlot;
+
+        let cls = 'bracket-matchup';
+        if (isFinal) cls += ' bm-final';
+        if (isBye) cls += ' bm-bye';
+
+        html += '<div class="'+cls+'" style="left:'+x+'px;top:'+y+'px;width:'+MW+'px;height:'+h+'px;" data-r="'+r+'" data-m="'+i+'">';
+
+        if (isBye && m.top) {
+          // Bye slot: single team, auto-advances
+          const canDrag = r < numR - 1;
+          const dragAttr = canDrag ? ' draggable="true"' : '';
+          const dragClass = canDrag ? ' bm-draggable' : '';
+          html += '<div class="bm-team'+dragClass+'"'+dragAttr+' data-r="'+r+'" data-m="'+i+'" data-pos="top" data-seed="'+m.top.seed+'" data-name="'+escHtml(m.top.name)+'">';
+          html += '<span class="bm-seed">'+m.top.seed+'</span><span class="bm-name">'+escHtml(m.top.name)+'</span><span class="bm-bye-label">BYE</span></div>';
+        } else if (m.top && m.bot) {
+          // Full matchup with both teams
+          const canDrag = r < numR - 1;
+          const dragAttr = canDrag ? ' draggable="true"' : '';
+          const dragClass = canDrag ? ' bm-draggable' : '';
+          html += '<div class="bm-team'+dragClass+'"'+dragAttr+' data-r="'+r+'" data-m="'+i+'" data-pos="top" data-seed="'+m.top.seed+'" data-name="'+escHtml(m.top.name)+'">';
+          html += '<span class="bm-seed">'+m.top.seed+'</span><span class="bm-name">'+escHtml(m.top.name)+'</span></div>';
+          html += '<div class="bm-team'+dragClass+'"'+dragAttr+' data-r="'+r+'" data-m="'+i+'" data-pos="bot" data-seed="'+m.bot.seed+'" data-name="'+escHtml(m.bot.name)+'">';
+          html += '<span class="bm-seed">'+m.bot.seed+'</span><span class="bm-name">'+escHtml(m.bot.name)+'</span></div>';
+        } else if (m.top && !m.bot) {
+          // Partially filled (e.g., bye team pre-filled in top, bottom empty)
+          const canDrag = r < numR - 1;
+          const dragAttr = canDrag ? ' draggable="true"' : '';
+          const dragClass = canDrag ? ' bm-draggable' : '';
+          html += '<div class="bm-team bm-filled'+dragClass+'"'+dragAttr+' data-r="'+r+'" data-m="'+i+'" data-pos="top" data-seed="'+m.top.seed+'" data-name="'+escHtml(m.top.name)+'">';
+          html += '<span class="bm-seed">'+m.top.seed+'</span><span class="bm-name">'+escHtml(m.top.name)+'</span></div>';
+          html += '<div class="bm-team bm-drop-target" data-r="'+r+'" data-m="'+i+'" data-pos="bot"><span class="bm-empty">&nbsp;</span></div>';
+        } else {
+          // Empty matchup
+          html += '<div class="bm-team bm-drop-target" data-r="'+r+'" data-m="'+i+'" data-pos="top"><span class="bm-empty">&nbsp;</span></div>';
+          html += '<div class="bm-team bm-drop-target" data-r="'+r+'" data-m="'+i+'" data-pos="bot"><span class="bm-empty">&nbsp;</span></div>';
+        }
+        html += '</div>';
+      }
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+    setupDragAndDrop(wrap, rounds, numR);
+  }
+
+  function setupDragAndDrop(wrap, rounds, numR) {
+    let dragData = null;
+
+    // Click-to-advance: click a team to send it to the next round
+    wrap.addEventListener('click', function(e) {
+      const teamEl = e.target.closest('.bm-draggable');
+      if (!teamEl) return;
+      const r = parseInt(teamEl.dataset.r);
+      const m = parseInt(teamEl.dataset.m);
+      const seed = teamEl.dataset.seed;
+      const name = teamEl.dataset.name;
+      if (r >= numR - 1) return;
+
+      const nextM = Math.floor(m / 2);
+      const pos = m % 2 === 0 ? 'top' : 'bot';
+      const targetSlot = wrap.querySelector('.bm-drop-target[data-r="'+(r+1)+'"][data-m="'+nextM+'"][data-pos="'+pos+'"]');
+      if (targetSlot) {
+        fillSlot(targetSlot, seed, name, r + 1, numR);
+      }
+    });
+
+    // Drag start
+    wrap.addEventListener('dragstart', function(e) {
+      const teamEl = e.target.closest('.bm-draggable');
+      if (!teamEl) return;
+      const r = parseInt(teamEl.dataset.r);
+      const m = parseInt(teamEl.dataset.m);
+      dragData = { r, m, seed: teamEl.dataset.seed, name: teamEl.dataset.name };
+      teamEl.classList.add('bm-dragging');
+
+      // Highlight valid drop target (even if already filled — allows override)
+      const nextM = Math.floor(m / 2);
+      const pos = m % 2 === 0 ? 'top' : 'bot';
+      const target = wrap.querySelector('.bm-drop-target[data-r="'+(r+1)+'"][data-m="'+nextM+'"][data-pos="'+pos+'"]');
+      if (target) target.classList.add('bm-drop-hover');
+    });
+
+    wrap.addEventListener('dragend', function(e) {
+      dragData = null;
+      wrap.querySelectorAll('.bm-dragging').forEach(el => el.classList.remove('bm-dragging'));
+      wrap.querySelectorAll('.bm-drop-hover').forEach(el => el.classList.remove('bm-drop-hover'));
+    });
+
+    wrap.addEventListener('dragover', function(e) {
+      if (!dragData) return;
+      const target = e.target.closest('.bm-drop-target');
+      if (!target) return;
+      const targetR = parseInt(target.dataset.r);
+      const targetM = parseInt(target.dataset.m);
+      const targetPos = target.dataset.pos;
+      if (targetR === dragData.r + 1 && targetM === Math.floor(dragData.m / 2) && targetPos === (dragData.m % 2 === 0 ? 'top' : 'bot')) {
+        e.preventDefault();
+      }
+    });
+
+    wrap.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (!dragData) return;
+      const target = e.target.closest('.bm-drop-target');
+      if (!target) return;
+      fillSlot(target, dragData.seed, dragData.name, parseInt(target.dataset.r), numR);
+      dragData = null;
+      wrap.querySelectorAll('.bm-dragging').forEach(el => el.classList.remove('bm-dragging'));
+      wrap.querySelectorAll('.bm-drop-hover').forEach(el => el.classList.remove('bm-drop-hover'));
+    });
+
+    function fillSlot(slot, seed, name, r, numR) {
+      // Clear any downstream entries that depended on the previous value in this slot
+      if (slot.classList.contains('bm-filled')) {
+        clearDownstream(r, parseInt(slot.dataset.m), slot.dataset.pos, numR);
+      }
+
+      slot.innerHTML = '<span class="bm-seed">'+seed+'</span><span class="bm-name">'+escHtml(name)+'</span>';
+      slot.classList.add('bm-filled');
+      // Keep bm-drop-target so it can be overridden later
+      if (!slot.classList.contains('bm-drop-target')) slot.classList.add('bm-drop-target');
+
+      // Make it draggable to the next round if not the final
+      if (r < numR - 1) {
+        slot.draggable = true;
+        slot.classList.add('bm-draggable');
+      }
+      slot.dataset.seed = seed;
+      slot.dataset.name = name;
+
+      // Update rounds data for Sheets copy
+      const mIdx = parseInt(slot.dataset.m);
+      const pos = slot.dataset.pos;
+      if (lastBracketData && lastBracketData.rounds[r]) {
+        const matchup = lastBracketData.rounds[r].matchups[mIdx];
+        if (pos === 'top') matchup.top = { seed: parseInt(seed), name };
+        else matchup.bot = { seed: parseInt(seed), name };
+      }
+    }
+
+    function clearDownstream(fromR, fromM, fromPos, numR) {
+      // When a slot is overridden, clear any entries it fed into in later rounds
+      // This slot at (fromR, fromM, fromPos) feeds into round fromR+1
+      if (fromR >= numR - 1) return;
+      const nextM = Math.floor(fromM / 2);
+      const nextPos = fromM % 2 === 0 ? 'top' : 'bot';
+      const downstream = wrap.querySelector('[data-r="'+(fromR+1)+'"][data-m="'+nextM+'"][data-pos="'+nextPos+'"].bm-filled');
+      if (downstream) {
+        // Recursively clear what this downstream slot fed
+        clearDownstream(fromR + 1, nextM, nextPos, numR);
+        // Reset this slot to empty
+        downstream.innerHTML = '<span class="bm-empty">&nbsp;</span>';
+        downstream.classList.remove('bm-filled', 'bm-draggable');
+        downstream.draggable = false;
+        delete downstream.dataset.seed;
+        delete downstream.dataset.name;
+        // Update data model
+        if (lastBracketData && lastBracketData.rounds[fromR + 1]) {
+          const matchup = lastBracketData.rounds[fromR + 1].matchups[nextM];
+          if (nextPos === 'top') matchup.top = null;
+          else matchup.bot = null;
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // BP BRACKET: four-way fold + room flow
+  // ============================================================
+
+  function generateBPBracket(teamNames, numRounds) {
+    const n = teamNames.length;
+    const numRooms = n / 4;
+    const roundNames = getRoundNames(numRounds);
+
+    // Four-way fold (from bpelimination.py)
+    const pools = [
+      teamNames.slice(0, numRooms),                              // Pool 0: 1..n
+      teamNames.slice(numRooms, 2 * numRooms).slice().reverse(), // Pool 1: reversed
+      teamNames.slice(2 * numRooms, 3 * numRooms),               // Pool 2: 2n+1..3n
+      teamNames.slice(3 * numRooms).slice().reverse(),            // Pool 3: reversed
+    ];
+
+    const firstRoundRooms = [];
+    for (let i = 0; i < numRooms; i++) {
+      const seeds = [
+        numRooms * 0 + i + 1,
+        numRooms * 2 - i,
+        numRooms * 2 + i + 1,
+        numRooms * 4 - i,
+      ];
+      firstRoundRooms.push({
+        teams: [
+          { seed: seeds[0], name: pools[0][i] },
+          { seed: seeds[1], name: pools[1][i] },
+          { seed: seeds[2], name: pools[2][i] },
+          { seed: seeds[3], name: pools[3][i] },
+        ]
+      });
+    }
+
+    const rounds = [{ name: roundNames[0], rooms: firstRoundRooms }];
+
+    // Subsequent rounds: show which rooms feed in
+    // BP subsequent fold: top half of rooms + reversed bottom half
+    let prevRooms = numRooms;
+    for (let r = 1; r < numRounds; r++) {
+      const count = prevRooms / 2;
+      const rooms = [];
+      for (let j = 0; j < count; j++) {
+        const fromA = j + 1;
+        const fromB = prevRooms - j;
+        rooms.push({
+          teams: null, // empty
+          feedLabel: 'Top 2 from ' + roundNames[r-1].replace(/s$/, '') + ' ' + fromA + ' + ' + roundNames[r-1].replace(/s$/, '') + ' ' + fromB,
+          feedFrom: [fromA, fromB],
+        });
+      }
+      rounds.push({ name: roundNames[r], rooms });
+      prevRooms = count;
+    }
+
+    return rounds;
+  }
+
+  function renderBPBracket(rounds) {
+    const wrap = document.getElementById('bracketWrap');
+    let html = '<div class="bp-bracket">';
+
+    for (let r = 0; r < rounds.length; r++) {
+      html += '<div class="bp-round"><div class="bp-round-title">'+rounds[r].name+'</div>';
+
+      if (r > 0) {
+        html += '<div class="bp-advance-label">Top 2 advance from each room</div>';
+      }
+
+      for (let i = 0; i < rounds[r].rooms.length; i++) {
+        const room = rounds[r].rooms[i];
+        html += '<div class="bp-room"><div class="bp-room-header">Room '+(i+1)+'</div>';
+        if (room.teams) {
+          for (const t of room.teams) {
+            html += '<div class="bp-team"><span class="bm-seed">'+t.seed+'</span><span>'+escHtml(t.name)+'</span></div>';
+          }
+        } else {
+          // Empty room with feed label
+          html += '<div class="bp-team"><span class="bp-feed">'+escHtml(room.feedLabel)+'</span></div>';
+          html += '<div class="bp-team"><span class="bp-feed">&nbsp;</span></div>';
+          html += '<div class="bp-team"><span class="bp-feed">&nbsp;</span></div>';
+          html += '<div class="bp-team"><span class="bp-feed">&nbsp;</span></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  // ============================================================
+  // GENERATE
+  // ============================================================
+
+  function generateBracket() {
+    const bs = bkBreakSize;
+    const numRounds = parseInt(document.getElementById('bkNumRounds').value);
+    const teamNames = getTeamNames();
+
+    if (bkFormat === 'wsdc') {
+      const rounds = generateWSDBracket(teamNames, numRounds);
+      renderWSDBracket(rounds);
+      lastBracketData = { format: 'wsdc', rounds, teamNames, numRounds };
+    } else {
+      const rounds = generateBPBracket(teamNames, numRounds);
+      renderBPBracket(rounds);
+      lastBracketData = { format: 'bp', rounds, teamNames, numRounds };
+    }
+
+    document.getElementById('bracketOutput').classList.remove('hidden');
+    document.getElementById('bracketOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ============================================================
+  // COPY FOR SHEETS
+  // ============================================================
+
+  function copyForSheets() {
+    if (!lastBracketData) return;
+    const { format, rounds, numRounds } = lastBracketData;
+
+    const b = '1px solid #000';
+    const pad = 'padding:3px 6px;font-size:12px;font-family:Arial;';
+    const bold = pad + 'font-weight:bold;';
+    const hdr = bold + 'text-align:center;background:#e8e8e8;';
+
+    let html = '<table style="border-collapse:collapse;">';
+    let tsv = '';
+
+    if (format === 'wsdc') {
+      const firstCount = rounds[0].matchups.length;
+      const rowsPerM0 = 3; // top team, bottom team, spacer
+      const totalRows = firstCount * rowsPerM0;
+
+      // For each round, compute which absolute rows have team cells
+      // Round r has count = firstCount / 2^r matchups
+      // Each matchup in round r spans (rowsPerM0 * 2^r) rows
+      // Top team at offset: floor(span/2) - 1, Bottom team at: floor(span/2)
+
+      // Header row: one column per round, spacer columns between
+      html += '<tr>';
+      for (let r = 0; r < numRounds; r++) {
+        html += '<td style="'+hdr+'">' + escHtml(rounds[r].name) + '</td>';
+        tsv += rounds[r].name;
+        if (r < numRounds - 1) { html += '<td></td>'; tsv += '\t'; }
+        tsv += '\t';
+      }
+      html += '</tr>';
+      tsv += '\n';
+
+      // Data rows
+      for (let row = 0; row < totalRows; row++) {
+        html += '<tr>';
+        let tsvLine = '';
+
+        for (let r = 0; r < numRounds; r++) {
+          const count = rounds[r].matchups.length;
+          const span = totalRows / count;
+          const mIdx = Math.floor(row / span);
+          const pos = row % span;
+          const topPos = Math.floor(span / 2) - 1;
+          const botPos = Math.floor(span / 2);
+
+          const m = rounds[r].matchups[mIdx];
+          let content = '';
+          let style = pad;
+
+          if (pos === topPos) {
+            if (m.top) content = '(' + m.top.seed + ') ' + m.top.name;
+            // Top team: top, left, right borders (box top)
+            style += 'border-top:'+b+';border-left:'+b+';border-right:'+b+';';
+          } else if (pos === botPos) {
+            if (m.bot) content = '(' + m.bot.seed + ') ' + m.bot.name;
+            // Bottom team: bottom, left, right borders (box bottom)
+            style += 'border-bottom:'+b+';border-left:'+b+';border-right:'+b+';';
+          }
+
+          html += '<td style="'+style+'">' + escHtml(content) + '</td>';
+          tsvLine += content;
+
+          // Spacer column between rounds
+          if (r < numRounds - 1) {
+            // Draw connector: a single horizontal line at the center between each pair
+            // The center is between topPos of even matchup and botPos of odd matchup
+            const pairIdx = Math.floor(mIdx / 2);
+            const pairSpan = span * 2;
+            const pairStart = pairIdx * pairSpan;
+            const pairCenter = pairStart + Math.floor(pairSpan / 2);
+            let connStyle = pad;
+
+            if (row === pairCenter - 1) {
+              // Single row: bottom-border creates a horizontal line at the exact center
+              connStyle += 'border-bottom:'+b+';';
+            }
+
+            html += '<td style="'+connStyle+'">&nbsp;</td>';
+            tsvLine += '\t';
+          }
+          tsvLine += '\t';
+        }
+        html += '</tr>';
+        tsv += tsvLine.trimEnd() + '\n';
+      }
+    } else {
+      // BP: tabular format with borders
+      for (let r = 0; r < rounds.length; r++) {
+        html += '<tr><td colspan="5" style="'+hdr+'border:'+b+';">' + escHtml(rounds[r].name) + '</td></tr>';
+        tsv += rounds[r].name + '\n';
+        for (let i = 0; i < rounds[r].rooms.length; i++) {
+          const room = rounds[r].rooms[i];
+          html += '<tr>';
+          html += '<td style="'+bold+'border:'+b+';">Room '+(i+1)+'</td>';
+          tsv += 'Room '+(i+1)+'\t';
+          if (room.teams) {
+            for (const t of room.teams) {
+              html += '<td style="'+pad+'border:'+b+';">('+t.seed+') '+escHtml(t.name)+'</td>';
+              tsv += '('+t.seed+') '+t.name+'\t';
+            }
+          } else {
+            html += '<td colspan="4" style="'+pad+'border:'+b+';color:#999;font-style:italic;">'+escHtml(room.feedLabel)+'</td>';
+            tsv += room.feedLabel;
+          }
+          html += '</tr>';
+          tsv += '\n';
+        }
+        html += '<tr><td colspan="5" style="height:6px;"></td></tr>';
+        tsv += '\n';
+      }
+    }
+
+    html += '</table>';
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const textBlob = new Blob([tsv], { type: 'text/plain' });
+    navigator.clipboard.write([
+      new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })
+    ]).then(() => {
+      const btn = document.getElementById('copySheets');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy for Sheets'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 })();
 </script>
