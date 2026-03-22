@@ -1476,31 +1476,26 @@
   }
 
   let useProxy = false;
-  const PROXIES = [
-    url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-  ];
 
   async function apiFetch(url, headers) {
+    // Try direct fetch first
     if (!useProxy) {
       try {
         const resp = await fetch(url, { headers });
         if (!resp.ok) throw new Error('API returned ' + resp.status);
         return resp.json();
       } catch(e) {
-        if (e.message.includes('Failed to fetch') || e.name === 'TypeError') {
-          useProxy = true;
-          document.getElementById('btStatus').textContent = 'Direct fetch blocked, retrying via proxy...';
-        } else { throw e; }
+        // CORS or network error — switch to proxy for all subsequent requests
+        useProxy = true;
+        document.getElementById('btStatus').textContent = 'Direct fetch blocked, using proxy...';
       }
     }
-    // Proxy path (no auth headers — proxies can't forward them)
-    for (const mkUrl of PROXIES) {
-      try {
-        const resp = await fetch(mkUrl(url));
-        if (resp.ok) return resp.json();
-      } catch(e) { /* try next proxy */ }
-    }
-    throw new Error('Could not reach API (tried direct + proxy)');
+    // Proxy: allorigins /get endpoint returns {contents: "..."} with proper CORS headers
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+    const resp = await fetch(proxyUrl);
+    if (!resp.ok) throw new Error('Proxy returned ' + resp.status);
+    const wrapper = await resp.json();
+    return JSON.parse(wrapper.contents);
   }
 
   function renderBacktab(data, targetSeq) {
