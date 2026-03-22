@@ -16,7 +16,7 @@
   }
 
   .container {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
   }
 
@@ -46,7 +46,6 @@
     margin-bottom: 1.25rem;
   }
 
-  /* Format toggle */
   .format-toggle {
     display: flex;
     background: #f0f2f5;
@@ -74,11 +73,8 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .format-toggle button:hover:not(.active) {
-    color: #374151;
-  }
+  .format-toggle button:hover:not(.active) { color: #374151; }
 
-  /* Input fields */
   .fields {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -109,9 +105,7 @@
   }
 
   .field input::-webkit-outer-spin-button,
-  .field input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-  }
+  .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
   .field input:focus {
     outline: none;
@@ -119,7 +113,6 @@
     box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
   }
 
-  /* Break size presets */
   .presets {
     display: flex;
     gap: 0.5rem;
@@ -152,7 +145,6 @@
     color: #6366f1;
   }
 
-  /* Calculate button */
   .calc-btn {
     width: 100%;
     padding: 0.75rem;
@@ -169,11 +161,17 @@
   .calc-btn:hover { background: #4f46e5; }
   .calc-btn:active { background: #4338ca; }
 
+  .sim-badge {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 0.6rem;
+  }
+
   /* Verdict */
   .verdict {
     padding: 1.25rem;
     border-radius: 10px;
-    margin-bottom: 1rem;
     line-height: 1.6;
   }
 
@@ -208,17 +206,17 @@
     font-size: 0.88rem;
   }
 
-  /* Distribution table */
+  /* Table */
   .dist-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
   }
 
   .dist-table thead th {
     text-align: left;
-    padding: 0.5rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: #6b7280;
     text-transform: uppercase;
@@ -226,62 +224,55 @@
     border-bottom: 2px solid #e5e7eb;
   }
 
-  .dist-table thead th:nth-child(n+3) {
-    text-align: right;
-  }
+  .dist-table thead th.r { text-align: right; }
+  .dist-table thead th.c { text-align: center; }
 
   .dist-table tbody td {
-    padding: 0.45rem 0.6rem;
+    padding: 0.4rem 0.5rem;
     border-bottom: 1px solid #f3f4f6;
     vertical-align: middle;
-  }
-
-  .dist-table tbody td:nth-child(n+3) {
-    text-align: right;
     font-variant-numeric: tabular-nums;
   }
 
-  .dist-table tbody tr.row-break {
-    background: #ecfdf5;
-  }
+  .dist-table tbody td.r { text-align: right; }
+  .dist-table tbody td.c { text-align: center; }
 
-  .dist-table tbody tr.row-bubble {
-    background: #fffbeb;
-  }
+  .dist-table tbody tr.row-break { background: #ecfdf5; }
+  .dist-table tbody tr.row-bubble { background: #fffbeb; }
+  .dist-table tbody tr.row-miss { color: #9ca3af; }
 
-  .dist-table tbody tr.row-miss {
-    color: #9ca3af;
-  }
-
-  /* Bar in table */
-  .bar-cell {
-    width: 120px;
-    min-width: 80px;
-  }
+  .bar-cell { width: 110px; min-width: 70px; }
 
   .bar-wrap {
+    position: relative;
     height: 16px;
     background: #f3f4f6;
     border-radius: 4px;
     overflow: hidden;
   }
 
-  .bar-fill {
+  .bar-range {
+    position: absolute;
     height: 100%;
     border-radius: 4px;
-    transition: width 0.4s ease;
+    opacity: 0.3;
   }
 
-  .bar-fill.fill-break { background: #34d399; }
-  .bar-fill.fill-bubble { background: #fbbf24; }
-  .bar-fill.fill-miss { background: #d1d5db; }
+  .bar-mean {
+    position: absolute;
+    height: 100%;
+    border-radius: 4px;
+  }
 
-  /* Status badge */
+  .fill-break { background: #34d399; }
+  .fill-bubble { background: #fbbf24; }
+  .fill-miss { background: #d1d5db; }
+
   .badge {
     display: inline-block;
-    padding: 0.15rem 0.5rem;
+    padding: 0.15rem 0.45rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -290,7 +281,10 @@
   .badge-bubble { background: #fef3c7; color: #92400e; }
   .badge-miss { background: #f3f4f6; color: #9ca3af; }
 
-  /* Error */
+  .prob-high { color: #065f46; font-weight: 600; }
+  .prob-mid { color: #92400e; font-weight: 600; }
+  .prob-low { color: #9ca3af; }
+
   .error {
     padding: 1rem;
     background: #fef2f2;
@@ -314,9 +308,10 @@
     line-height: 1.5;
   }
 
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     .fields { grid-template-columns: 1fr; }
     .bar-cell { display: none; }
+    .hide-mobile { display: none; }
   }
 </style>
 </head>
@@ -325,7 +320,7 @@
 <div class="container">
   <header>
     <h1>Break Calculator</h1>
-    <p>Estimate the wins or points needed to break at a debate tournament</p>
+    <p>Monte Carlo simulation of Tabbycat bracket mechanics</p>
   </header>
 
   <div class="card">
@@ -359,6 +354,7 @@
     </div>
 
     <button class="calc-btn" id="calcBtn">Calculate</button>
+    <div class="sim-badge">Runs 10,000 simulated tournaments using Tabbycat's bracket &amp; pull-up rules</div>
   </div>
 
   <div id="results" class="hidden">
@@ -375,9 +371,10 @@
 
 <script>
 (function() {
+  const NUM_SIMS = 10000;
   let format = 'wsdc';
 
-  // Format toggle
+  // --- UI wiring ---
   document.getElementById('formatToggle').addEventListener('click', function(e) {
     if (e.target.tagName !== 'BUTTON') return;
     this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -385,13 +382,11 @@
     format = e.target.dataset.format;
   });
 
-  // Presets
   document.querySelector('.presets').addEventListener('click', function(e) {
     if (e.target.tagName !== 'BUTTON') return;
     document.getElementById('breaking').value = e.target.dataset.val;
   });
 
-  // Enter key triggers calculate
   document.querySelectorAll('.field input').forEach(input => {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); calculate(); }
@@ -400,216 +395,437 @@
 
   document.getElementById('calcBtn').addEventListener('click', calculate);
 
-  // Binomial coefficient
-  function comb(n, k) {
-    if (k < 0 || k > n) return 0;
-    if (k === 0 || k === n) return 1;
-    if (k > n - k) k = n - k;
-    let result = 1;
-    for (let i = 0; i < k; i++) {
-      result = result * (n - i) / (i + 1);
+  // --- Fisher-Yates shuffle ---
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
     }
-    return result;
   }
 
-  // Compute expected distribution
-  function getDistribution(fmt, N, R) {
-    let dist = []; // {level, expected}, sorted highest first
+  // ============================================================
+  // SIMULATION ENGINE: 2-Team (WSDC)
+  // Ported from Tabbycat powerpair.py _pullup() with pullup_top
+  // ============================================================
+  function simulateRound2Team(teams) {
+    const N = teams.length;
 
-    if (fmt === 'wsdc') {
-      let denom = Math.pow(2, R);
-      for (let k = R; k >= 0; k--) {
-        let expected = N * comb(R, k) / denom;
-        dist.push({ level: k, expected: expected });
+    // Build brackets: group indices by current wins, sorted descending
+    const maxW = teams.reduce((a, b) => Math.max(a, b), 0);
+    const buckets = new Array(maxW + 1);
+    for (let w = 0; w <= maxW; w++) buckets[w] = [];
+    for (let i = 0; i < N; i++) buckets[teams[i]].push(i);
+
+    // Collect non-empty brackets top-down
+    const brackets = [];
+    for (let w = maxW; w >= 0; w--) {
+      if (buckets[w].length > 0) brackets.push(buckets[w]);
+    }
+
+    // Resolve odd brackets via pull-up (top team from next bracket below)
+    // Faithfully mirrors powerpair.py lines 190-212
+    let pullupTarget = null;
+    for (let b = 0; b < brackets.length; b++) {
+      const br = brackets[b];
+      if (pullupTarget !== null) {
+        // Pull first team from this bracket into the one above
+        const pulled = br.shift();
+        pullupTarget.push(pulled);
+        pullupTarget = null;
       }
-    } else {
-      // BP: DP convolution of uniform {0,1,2,3}
-      let maxPts = 3 * R;
-      let dp = new Float64Array(maxPts + 1);
-      dp[0] = 1;
+      if (br.length % 2 !== 0) {
+        pullupTarget = br;
+      }
+    }
+    // If last bracket is still odd and N is odd, the phantom bye team handles it
+
+    // Simulate debates within each bracket
+    for (const br of brackets) {
+      if (br.length < 2) continue;
+      shuffle(br);
+      for (let i = 0; i < br.length - 1; i += 2) {
+        if (Math.random() < 0.5) {
+          teams[br[i]]++;
+        } else {
+          teams[br[i + 1]]++;
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // SIMULATION ENGINE: BP (4-Team)
+  // Ported from Tabbycat bphungarian.py _define_rooms_anywhere()
+  // ============================================================
+  function simulateRoundBP(teams) {
+    const N = teams.length;
+
+    // Count teams at each point level and collect indices
+    const countMap = new Map();
+    const indexMap = new Map();
+    for (let i = 0; i < N; i++) {
+      const p = teams[i];
+      if (!countMap.has(p)) { countMap.set(p, 0); indexMap.set(p, []); }
+      countMap.set(p, countMap.get(p) + 1);
+      indexMap.get(p).push(i);
+    }
+
+    // Shuffle each group so pull-up selection and room assignment are random
+    for (const indices of indexMap.values()) shuffle(indices);
+
+    const sortedPoints = [...countMap.keys()].sort((a, b) => b - a);
+
+    // Port of _define_rooms_anywhere (bphungarian.py lines 111-143)
+    // Build rooms as arrays of 4 team indices
+    const rooms = [];
+    let currentIndices = [];
+    let nteams = 0;
+    let pullups_needed = 0;
+
+    // Track how many teams consumed from each point level
+    const consumed = new Map();
+    for (const p of sortedPoints) consumed.set(p, 0);
+
+    for (const p of sortedPoints) {
+      const available = countMap.get(p);
+      const indices = indexMap.get(p);
+      let cursor = consumed.get(p);
+
+      if (pullups_needed > 0 && pullups_needed < available) {
+        // Complete the bracket above with pullups from this level
+        for (let i = 0; i < pullups_needed; i++) {
+          currentIndices.push(indices[cursor++]);
+        }
+        nteams += pullups_needed;
+        // nteams should now be divisible by 4 — form rooms
+        shuffle(currentIndices);
+        for (let i = 0; i < currentIndices.length; i += 4) {
+          rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
+        }
+        currentIndices = [];
+        nteams = 0;
+      } else if (pullups_needed > 0) {
+        // Not enough teams to fill — consume all and cascade
+        // pullups_needed >= available, so take everything
+      }
+
+      // Add remaining teams from this level
+      const remaining = available - (cursor - consumed.get(p));
+      for (let i = cursor; i < indices.length; i++) {
+        currentIndices.push(indices[i]);
+      }
+      consumed.set(p, indices.length);
+      nteams += (indices.length - cursor);
+      pullups_needed = (4 - (nteams % 4)) % 4;
+    }
+
+    // Final bracket
+    if (currentIndices.length >= 4) {
+      shuffle(currentIndices);
+      for (let i = 0; i + 3 < currentIndices.length; i += 4) {
+        rooms.push([currentIndices[i], currentIndices[i+1], currentIndices[i+2], currentIndices[i+3]]);
+      }
+    }
+
+    // Assign points within each room: random permutation of [3, 2, 1, 0]
+    const awards = [3, 2, 1, 0];
+    for (const room of rooms) {
+      shuffle(room);
+      teams[room[0]] += 3;
+      teams[room[1]] += 2;
+      teams[room[2]] += 1;
+      // room[3] += 0
+    }
+  }
+
+  // ============================================================
+  // RUN SIMULATION
+  // ============================================================
+  function runSimulations(fmt, N, R, B) {
+    const maxLevel = fmt === 'wsdc' ? R : 3 * R;
+    const isBP = fmt === 'bp';
+
+    // For odd N (2-team) or N%4!=0 (BP), add phantom teams
+    let simN = N;
+    if (!isBP && simN % 2 !== 0) simN++;
+    if (isBP && simN % 4 !== 0) simN += (4 - simN % 4) % 4;
+
+    // Per-simulation: record distribution and bubble level
+    // Aggregate accumulators
+    const levelSums = new Float64Array(maxLevel + 1);
+    const levelSumsSq = new Float64Array(maxLevel + 1);
+    // For percentiles: store per-sim counts at each level
+    const levelCounts = new Array(maxLevel + 1);
+    for (let l = 0; l <= maxLevel; l++) levelCounts[l] = new Uint16Array(NUM_SIMS);
+
+    // Break analysis per sim
+    const bubbleLevels = new Int16Array(NUM_SIMS);
+    const bubbleBreaking = new Float32Array(NUM_SIMS);
+    const bubbleTotal = new Float32Array(NUM_SIMS);
+
+    for (let s = 0; s < NUM_SIMS; s++) {
+      // Initialize teams
+      const teams = new Int32Array(simN);
+
+      // Run R rounds
       for (let r = 0; r < R; r++) {
-        let next = new Float64Array(maxPts + 1);
-        for (let p = 0; p <= maxPts; p++) {
-          if (dp[p] === 0) continue;
-          for (let k = 0; k <= 3; k++) {
-            if (p + k <= maxPts) next[p + k] += dp[p];
-          }
+        if (isBP) {
+          simulateRoundBP(teams);
+        } else {
+          simulateRound2Team(teams);
         }
-        dp = next;
       }
-      let denom = Math.pow(4, R);
-      for (let p = maxPts; p >= 0; p--) {
-        if (dp[p] > 0) {
-          dist.push({ level: p, expected: N * dp[p] / denom });
+
+      // Count distribution (only real teams, not phantoms)
+      const dist = new Uint16Array(maxLevel + 1);
+      for (let i = 0; i < N; i++) {
+        dist[teams[i]]++;
+      }
+
+      // Store per-level counts
+      for (let l = 0; l <= maxLevel; l++) {
+        levelCounts[l][s] = dist[l];
+        levelSums[l] += dist[l];
+        levelSumsSq[l] += dist[l] * dist[l];
+      }
+
+      // Determine bubble level for this sim
+      let cum = 0;
+      for (let l = maxLevel; l >= 0; l--) {
+        cum += dist[l];
+        if (cum >= B) {
+          bubbleLevels[s] = l;
+          const above = cum - dist[l];
+          bubbleBreaking[s] = B - above;
+          bubbleTotal[s] = dist[l];
+          break;
         }
       }
     }
-    return dist;
+
+    // Aggregate statistics per level
+    const stats = [];
+    for (let l = maxLevel; l >= 0; l--) {
+      const mean = levelSums[l] / NUM_SIMS;
+      if (mean < 0.005) continue; // skip negligible levels
+
+      // Sort for percentiles
+      const sorted = Array.from(levelCounts[l]).sort((a, b) => a - b);
+      const p5 = sorted[Math.floor(NUM_SIMS * 0.05)];
+      const p25 = sorted[Math.floor(NUM_SIMS * 0.25)];
+      const p75 = sorted[Math.floor(NUM_SIMS * 0.75)];
+      const p95 = sorted[Math.floor(NUM_SIMS * 0.95)];
+      const min = sorted[0];
+      const max = sorted[NUM_SIMS - 1];
+
+      // P(all break at this level) = fraction of sims where bubble is at or below this level
+      let pAllBreak = 0;
+      let pAnyBreak = 0;
+      let pBubble = 0;
+      for (let s = 0; s < NUM_SIMS; s++) {
+        if (bubbleLevels[s] < l) pAllBreak++;
+        else if (bubbleLevels[s] === l) { pAnyBreak++; pBubble++; }
+      }
+      pAllBreak /= NUM_SIMS;
+      pBubble /= NUM_SIMS;
+      pAnyBreak = pAllBreak + pBubble; // any = guaranteed + bubble chance
+
+      stats.push({ level: l, mean, p5, p25, p75, p95, min, max, pAllBreak, pAnyBreak, pBubble });
+    }
+
+    // Verdict: thresholds
+    // "Safe" = lowest level where pAllBreak >= 0.99
+    // "Likely" = lowest level where pAllBreak + pBubble >= 0.50
+    // Bubble analysis
+    let safeLevel = null, bubbleLevel = null;
+    let avgBubbleBreaking = 0, avgBubbleTotal = 0, bubblePct = 0;
+
+    for (let i = stats.length - 1; i >= 0; i--) {
+      if (stats[i].pAllBreak >= 0.99 && safeLevel === null) {
+        safeLevel = stats[i].level;
+      }
+    }
+    // safe is the LOWEST level with >= 99% all break
+    // walk from top down to find the first with < 99%
+    safeLevel = null;
+    for (const s of stats) {
+      if (s.pAllBreak >= 0.99) {
+        safeLevel = s.level;
+      } else {
+        break;
+      }
+    }
+    // Actually: safeLevel should be the lowest level where you're safe.
+    // Walk from bottom up: first level with pAllBreak >= 0.99
+    for (let i = stats.length - 1; i >= 0; i--) {
+      if (stats[i].pAllBreak >= 0.99) { safeLevel = stats[i].level; break; }
+    }
+
+    // Bubble = level with highest pBubble
+    let maxBubblePct = 0;
+    for (const s of stats) {
+      if (s.pBubble > maxBubblePct) {
+        maxBubblePct = s.pBubble;
+        bubbleLevel = s.level;
+        bubblePct = s.pBubble;
+      }
+    }
+
+    // Average bubble stats
+    let bCount = 0;
+    for (let s = 0; s < NUM_SIMS; s++) {
+      if (bubbleLevels[s] === bubbleLevel) {
+        avgBubbleBreaking += bubbleBreaking[s];
+        avgBubbleTotal += bubbleTotal[s];
+        bCount++;
+      }
+    }
+    if (bCount > 0) {
+      avgBubbleBreaking /= bCount;
+      avgBubbleTotal /= bCount;
+    }
+
+    // Check for near-clean break (pBubble < 1% at the main bubble level)
+    const isClean = bubbleLevel !== null && safeLevel !== null && safeLevel <= bubbleLevel;
+
+    return { stats, safeLevel, bubbleLevel, bubblePct, avgBubbleBreaking, avgBubbleTotal, isClean };
   }
 
+  // ============================================================
+  // CALCULATE AND RENDER
+  // ============================================================
   function calculate() {
-    let N = parseInt(document.getElementById('teams').value);
-    let R = parseInt(document.getElementById('rounds').value);
-    let B = parseInt(document.getElementById('breaking').value);
-    let resultsEl = document.getElementById('results');
-    let verdictEl = document.getElementById('verdict');
-    let tableEl = document.getElementById('distTable');
-    let noteEl = document.getElementById('noteText');
+    const N = parseInt(document.getElementById('teams').value);
+    const R = parseInt(document.getElementById('rounds').value);
+    const B = parseInt(document.getElementById('breaking').value);
+    const resultsEl = document.getElementById('results');
+    const verdictEl = document.getElementById('verdict');
+    const tableEl = document.getElementById('distTable');
+    const noteEl = document.getElementById('noteText');
+    const label = format === 'wsdc' ? 'wins' : 'points';
 
     // Validation
     if (isNaN(N) || isNaN(R) || isNaN(B) || N < 2 || R < 1 || B < 1) {
       resultsEl.classList.remove('hidden');
       verdictEl.innerHTML = '<div class="error">Please enter valid values (teams &ge; 2, rounds &ge; 1, breaking &ge; 1).</div>';
-      tableEl.innerHTML = '';
-      noteEl.innerHTML = '';
-      return;
+      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
+    }
+    if (format === 'bp' && N < 4) {
+      resultsEl.classList.remove('hidden');
+      verdictEl.innerHTML = '<div class="error">BP requires at least 4 teams.</div>';
+      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
     }
     if (B > N) {
       resultsEl.classList.remove('hidden');
       verdictEl.innerHTML = '<div class="error">Breaking teams cannot exceed total teams.</div>';
-      tableEl.innerHTML = '';
-      noteEl.innerHTML = '';
-      return;
+      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
     }
     if (B === N) {
       resultsEl.classList.remove('hidden');
       verdictEl.innerHTML = '<div class="verdict clean"><div class="headline">Everyone breaks!</div><div class="detail">All ' + N + ' teams advance to elimination rounds.</div></div>';
-      tableEl.innerHTML = '';
-      noteEl.innerHTML = '';
-      return;
+      tableEl.innerHTML = ''; noteEl.innerHTML = ''; return;
     }
 
-    let dist = getDistribution(format, N, R);
-    let label = format === 'wsdc' ? 'wins' : 'points';
-    let maxLevel = dist[0].level;
+    // Run simulation
+    const result = runSimulations(format, N, R, B);
+    const { stats, safeLevel, bubbleLevel, bubblePct, avgBubbleBreaking, avgBubbleTotal, isClean } = result;
 
-    // Find break threshold
-    let cumulative = 0;
-    let guaranteedLevel = null; // lowest level where all teams at this level and above break
-    let bubbleLevel = null;    // level where some but not all break
-    let bubbleNeeded = 0;      // how many from the bubble level break
-    let bubbleTotal = 0;       // how many teams are at bubble level
-    let cleanBreak = false;
-
-    for (let i = 0; i < dist.length; i++) {
-      let prev = cumulative;
-      cumulative += dist[i].expected;
-
-      if (cumulative >= B - 0.001) { // small epsilon for floating point
-        if (Math.abs(cumulative - B) < 0.01 && Math.abs(prev - B) >= 0.01) {
-          // Clean break: cumulative exactly equals B at this level
-          cleanBreak = true;
-          guaranteedLevel = dist[i].level;
-          bubbleLevel = null;
-        } else if (prev < B - 0.001) {
-          // Bubble: break falls within this level
-          bubbleLevel = dist[i].level;
-          bubbleTotal = dist[i].expected;
-          bubbleNeeded = B - prev;
-          guaranteedLevel = i > 0 ? dist[i - 1].level : dist[i].level;
-          if (Math.abs(bubbleNeeded - bubbleTotal) < 0.01) {
-            cleanBreak = true;
-            guaranteedLevel = dist[i].level;
-            bubbleLevel = null;
-          }
-        }
-        break;
-      }
-    }
-
-    // Build verdict
-    let verdictHtml = '';
-    if (cleanBreak) {
-      let record = format === 'wsdc' ? guaranteedLevel + '-' + (R - guaranteedLevel) : guaranteedLevel + ' ' + label;
-      verdictHtml = '<div class="verdict clean">';
-      verdictHtml += '<div class="headline">Clean break at ' + guaranteedLevel + ' ' + label + '</div>';
-      verdictHtml += '<div class="detail">All teams on <strong>' + record + '</strong> or better advance to elimination rounds.</div>';
-      verdictHtml += '</div>';
+    // --- Verdict ---
+    let vh = '';
+    if (isClean || bubblePct < 0.02) {
+      // Near-clean break
+      const lvl = safeLevel !== null ? safeLevel : (stats.length > 0 ? stats[0].level : 0);
+      const rec = format === 'wsdc' ? lvl + '&#8211;' + (R - lvl) : lvl + ' ' + label;
+      vh = '<div class="verdict clean">';
+      vh += '<div class="headline">Clean break at ' + lvl + ' ' + label + '</div>';
+      vh += '<div class="detail">Teams on <strong>' + rec + '</strong> or better break in virtually all simulations.</div>';
+      vh += '</div>';
     } else {
-      let bestRecord = format === 'wsdc' ? bubbleLevel + '-' + (R - bubbleLevel) : bubbleLevel + ' ' + label;
-      let worstRecord = format === 'wsdc' ? guaranteedLevel + '-' + (R - guaranteedLevel) : guaranteedLevel + ' ' + label;
-      verdictHtml = '<div class="verdict bubble">';
-      verdictHtml += '<div class="headline">Break is on the bubble</div>';
-      verdictHtml += '<div class="detail">';
-      verdictHtml += '<strong>Safe:</strong> ' + guaranteedLevel + ' ' + label + ' (' + worstRecord + ') &mdash; guaranteed to break<br>';
-      verdictHtml += '<strong>Bubble:</strong> ' + bubbleLevel + ' ' + label + ' (' + bestRecord + ') &mdash; some teams at this level will break';
-      verdictHtml += '</div>';
-      verdictHtml += '<div class="bubble-info">';
-      verdictHtml += '~<strong>' + bubbleNeeded.toFixed(1) + '</strong> of ~<strong>' + bubbleTotal.toFixed(1) + '</strong> teams on ' + bestRecord + ' are expected to break';
-      verdictHtml += '</div>';
-      verdictHtml += '</div>';
+      const safeRec = safeLevel !== null ? (format === 'wsdc' ? safeLevel + '&#8211;' + (R - safeLevel) : safeLevel + ' ' + label) : 'N/A';
+      const bubbleRec = bubbleLevel !== null ? (format === 'wsdc' ? bubbleLevel + '&#8211;' + (R - bubbleLevel) : bubbleLevel + ' ' + label) : 'N/A';
+      vh = '<div class="verdict bubble">';
+      vh += '<div class="headline">Break is on the bubble</div>';
+      vh += '<div class="detail">';
+      if (safeLevel !== null) {
+        vh += '<strong>Safe:</strong> ' + safeLevel + ' ' + label + ' (' + safeRec + ') &mdash; breaks in &ge;99% of simulations<br>';
+      }
+      vh += '<strong>Bubble:</strong> ' + bubbleLevel + ' ' + label + ' (' + bubbleRec + ') &mdash; this is the break threshold in ' + (bubblePct * 100).toFixed(0) + '% of simulations';
+      vh += '</div>';
+      vh += '<div class="bubble-info">';
+      vh += 'When on bubble: ~<strong>' + avgBubbleBreaking.toFixed(1) + '</strong> of ~<strong>' + avgBubbleTotal.toFixed(1) + '</strong> teams on ' + bubbleRec + ' break (decided by speaker scores)';
+      vh += '</div>';
+      vh += '</div>';
     }
-    verdictEl.innerHTML = verdictHtml;
+    verdictEl.innerHTML = vh;
 
-    // Build distribution table
-    let maxExpected = Math.max(...dist.map(d => d.expected));
-    cumulative = 0;
+    // --- Distribution Table ---
+    const maxMean = Math.max(...stats.map(s => s.mean));
+    const maxP95 = Math.max(...stats.map(s => s.p95));
+    const barMax = Math.max(maxMean, maxP95, 1);
 
+    let cumMean = 0;
     let html = '<thead><tr>';
-    html += '<th>' + (format === 'wsdc' ? 'Wins' : 'Points') + '</th>';
+    html += '<th>' + (format === 'wsdc' ? 'Wins' : 'Pts') + '</th>';
     if (format === 'wsdc') html += '<th>Record</th>';
-    html += '<th>Expected Teams</th>';
-    html += '<th>Cumulative</th>';
+    html += '<th class="r">Avg Teams</th>';
+    html += '<th class="r hide-mobile">Range (5&#8211;95%)</th>';
+    html += '<th class="r">Cumulative</th>';
+    html += '<th class="c">P(break)</th>';
     html += '<th>Status</th>';
     html += '<th class="bar-cell"></th>';
     html += '</tr></thead><tbody>';
 
     let breakLineInserted = false;
 
-    for (let i = 0; i < dist.length; i++) {
-      let d = dist[i];
-      if (d.expected < 0.005 && cumulative < 0.01) continue; // skip negligible top rows
-      if (d.expected < 0.005 && cumulative > B) continue; // skip negligible bottom rows
+    for (const s of stats) {
+      cumMean += s.mean;
 
-      cumulative += d.expected;
-
-      let status, rowClass, barClass, badgeClass;
-      if (cleanBreak) {
-        if (d.level >= guaranteedLevel) {
-          status = 'Break';
-          rowClass = 'row-break';
-          barClass = 'fill-break';
-          badgeClass = 'badge-break';
-        } else {
-          status = 'Miss';
-          rowClass = 'row-miss';
-          barClass = 'fill-miss';
-          badgeClass = 'badge-miss';
-        }
+      // Determine row status
+      let rowClass, fillClass, badgeClass, statusText;
+      if (s.pAllBreak >= 0.99) {
+        rowClass = 'row-break'; fillClass = 'fill-break'; badgeClass = 'badge-break'; statusText = 'Break';
+      } else if (s.pAnyBreak > 0.01) {
+        rowClass = 'row-bubble'; fillClass = 'fill-bubble'; badgeClass = 'badge-bubble'; statusText = 'Bubble';
       } else {
-        if (d.level > guaranteedLevel) {
-          status = 'Break';
-          rowClass = 'row-break';
-          barClass = 'fill-break';
-          badgeClass = 'badge-break';
-        } else if (d.level === bubbleLevel) {
-          status = 'Bubble';
-          rowClass = 'row-bubble';
-          barClass = 'fill-bubble';
-          badgeClass = 'badge-bubble';
-        } else {
-          status = 'Miss';
-          rowClass = 'row-miss';
-          barClass = 'fill-miss';
-          badgeClass = 'badge-miss';
-        }
+        rowClass = 'row-miss'; fillClass = 'fill-miss'; badgeClass = 'badge-miss'; statusText = 'Miss';
       }
 
-      // Insert break line separator
-      if (!breakLineInserted && (status === 'Bubble' || status === 'Miss')) {
-        html += '<tr class="break-line-row"><td colspan="' + (format === 'wsdc' ? 6 : 5) + '"></td></tr>';
+      // Break line
+      if (!breakLineInserted && (statusText === 'Bubble' || statusText === 'Miss')) {
+        const cols = format === 'wsdc' ? 8 : 7;
+        html += '<tr class="break-line-row"><td colspan="' + cols + '"></td></tr>';
         breakLineInserted = true;
       }
 
-      let barWidth = Math.max(2, (d.expected / maxExpected) * 100);
+      // P(break) display: show P(all break) for break rows, P(any break) for bubble
+      let pDisplay, pClass;
+      if (s.pAllBreak >= 0.99) {
+        pDisplay = '100%'; pClass = 'prob-high';
+      } else if (s.pAnyBreak >= 0.99) {
+        pDisplay = (s.pAllBreak * 100).toFixed(0) + '&#8211;100%'; pClass = 'prob-mid';
+      } else if (s.pAnyBreak > 0.01) {
+        pDisplay = (s.pAllBreak * 100).toFixed(0) + '&#8211;' + (s.pAnyBreak * 100).toFixed(0) + '%'; pClass = 'prob-mid';
+      } else {
+        pDisplay = '0%'; pClass = 'prob-low';
+      }
+
+      // Bar: range band + mean bar
+      const rangeLeft = (s.p5 / barMax * 100).toFixed(1);
+      const rangeWidth = Math.max(1, ((s.p95 - s.p5) / barMax * 100)).toFixed(1);
+      const meanWidth = Math.max(1, (s.mean / barMax * 100)).toFixed(1);
 
       html += '<tr class="' + rowClass + '">';
-      html += '<td><strong>' + d.level + '</strong></td>';
-      if (format === 'wsdc') html += '<td>' + d.level + '–' + (R - d.level) + '</td>';
-      html += '<td>' + d.expected.toFixed(2) + '</td>';
-      html += '<td>' + cumulative.toFixed(2) + '</td>';
-      html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
-      html += '<td class="bar-cell"><div class="bar-wrap"><div class="bar-fill ' + barClass + '" style="width:' + barWidth.toFixed(1) + '%"></div></div></td>';
+      html += '<td><strong>' + s.level + '</strong></td>';
+      if (format === 'wsdc') html += '<td>' + s.level + '&#8211;' + (R - s.level) + '</td>';
+      html += '<td class="r">' + s.mean.toFixed(1) + '</td>';
+      html += '<td class="r hide-mobile">' + s.p5 + '&#8211;' + s.p95 + '</td>';
+      html += '<td class="r">' + cumMean.toFixed(1) + '</td>';
+      html += '<td class="c ' + pClass + '">' + pDisplay + '</td>';
+      html += '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>';
+      html += '<td class="bar-cell"><div class="bar-wrap">';
+      html += '<div class="bar-range ' + fillClass + '" style="left:' + rangeLeft + '%;width:' + rangeWidth + '%"></div>';
+      html += '<div class="bar-mean ' + fillClass + '" style="width:' + meanWidth + '%"></div>';
+      html += '</div></td>';
       html += '</tr>';
     }
 
@@ -617,14 +833,11 @@
     tableEl.innerHTML = html;
 
     // Note
-    let noteHtml = 'Based on theoretical distribution assuming perfect power-pairing. ';
-    if (format === 'wsdc') {
-      noteHtml += 'Uses binomial model: each bracket splits evenly each round. ';
-    } else {
-      noteHtml += 'Uses uniform placement model: equal probability of 1st/2nd/3rd/4th within each bracket. ';
-    }
-    noteHtml += 'Actual results may vary due to pull-ups, byes, and uneven brackets. Tiebreakers (speaker scores) determine which teams on the bubble advance.';
-    noteEl.innerHTML = noteHtml;
+    noteEl.innerHTML = 'Based on ' + NUM_SIMS.toLocaleString() + ' Monte Carlo simulations using Tabbycat\'s power-pairing algorithm with pull-up bracket resolution. '
+      + (format === 'wsdc'
+        ? 'Each round: teams grouped by wins, odd brackets resolved via pull-up (top team from bracket below), 50/50 random outcomes. '
+        : 'Each round: teams grouped by points, rooms of 4 formed with pull-ups per WUDC rules, random 1st/2nd/3rd/4th placement. ')
+      + 'Speaker score tiebreakers determine which teams on the bubble advance in real tournaments.';
 
     resultsEl.classList.remove('hidden');
     resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
